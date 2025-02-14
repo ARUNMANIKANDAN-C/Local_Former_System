@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>OTP Verification</title>
+</head>
+<body>
+    <div class="login">
+<form class="form" action="details.html">
+    <label for="phone">Phone Number:</label>
+    <input type="tel" name="phone" id="phone" placeholder="+1234567890" required pattern="\+?\d{10,15}" autocomplete="tel">
+    <br><br>
+
+    <label for="passkey">Enter your Password:</label>
+    <input type="password" name="passkey" id="passkey" placeholder="Your Password" required autocomplete="new-password">
+    <br><br>
+
+    <button type="button" onclick="generateOTP()">Get OTP</button>
+    <br><br>
+
+    <label for="otp">Enter your OTP:</label>
+    <input type="text" name="OTP" id="otp" placeholder="123456" required pattern="\d{4,6}" autocomplete="off">
+    <br><br>
+
+    <input type="submit" value="Submit">
+</form>
+
+<script>
+    function generateOTP() {
+        let otp = Math.floor(100000 + Math.random() * 900000); // Generate 6-digit OTP
+        alert("Your OTP is: " + otp); // Simulate sending OTP
+        document.getElementById("otp").value = otp; // Auto-fill for testing (remove in production)
+    }
+</script>
+</div>
+</body>
+</html>
