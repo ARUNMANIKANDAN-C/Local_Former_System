@@ -7,42 +7,70 @@
     <title>Product Category Form</title>
 </head>
 <body>
-    <div class="login">
-    <form class="form" action="submit.html">
-        <label for="productList">Select Product Category:</label>
-        <select id="productList" name="product">
-            <option value="onions">Onions</option>
-            <option value="tomatoes">Tomatoes</option>
-        </select>
-        <br><br>
-        
-        <label for="productName">Add New Product:</label>
-        <input type="text" id="productName" placeholder="Enter product name">
-        <button type="button" onclick="">Add</button>
-        <br><br>
-
-        <label for="description">Product Description:</label>
-        <input type="text" name="description" placeholder="Fresh organic tomatoes" required>
-        <br><br>
+    <header class="header">
+        <div class="logo">Local Farmer System</div>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Products</a></li>
+                <li><a href="#">Cart</a></li>
+            </ul>
+        </nav>
+    </header>
     
-        <label for="Image">Upload your files</label>
-        <input type="file" id="Image" name="Image" multiple>
-        <br><br>
-
-        <label for="availableKG">Available (KG):</label>
-        <input type="number" name="availableKG" placeholder="10" required>
-        <br><br>
+    <main class="container">
+        <div class="login">
+            <form class="form" action="submit.html">
+                <table>
+                    <tr>
+                        <td><label for="productList">Select Product Category:</label></td>
+                        <td>
+                            <select id="productList" name="product">
+                                <option value="onions">Onions</option>
+                                <option value="tomatoes">Tomatoes</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="productName">Add New Product:</label></td>
+                        <td>
+                            <input type="text" id="productName" placeholder="Enter product name">
+                            <button type="button">Add</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="description">Product Description:</label></td>
+                        <td><input type="text" name="description" placeholder="Fresh organic tomatoes" required></td>
+                    </tr>
+                    <tr>
+                        <td><label for="Image">Upload your files:</label></td>
+                        <td><input type="file" id="Image" name="Image" multiple></td>
+                    </tr>
+                    <tr>
+                        <td><label for="availableKG">Available (KG):</label></td>
+                        <td><input type="number" name="availableKG" placeholder="10" required></td>
+                    </tr>
+                    <tr>
+                        <td><label for="pricePerQuantity">Price per Quantity:</label></td>
+                        <td><input type="number" name="pricePerQuantity" placeholder="5" required></td>
+                    </tr>
+                    <tr>
+                        <td><label for="quantityPerKG">Quantity per KG:</label></td>
+                        <td><input type="number" name="quantityPerKG" placeholder="4" required></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: center;">
+                            <input type="submit" value="Submit">
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </main>
     
-        <label for="pricePerQuantity">Price per Quantity:</label>
-        <input type="number" name="pricePerQuantity" placeholder="5" required>
-        <br><br>
-    
-        <label for="quantityPerKG">Quantity per KG:</label>
-        <input type="number" name="quantityPerKG" placeholder="4" required>
-        <br><br>
-    
-        <input type="submit" value="Submit">
-    </form>
-    </div>
+    <footer class="footer">
+        <p>&copy; 2024 Local Farmer System. All rights reserved.</p>
+    </footer>
 </body>
 </html>

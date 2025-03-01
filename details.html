@@ -3,38 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Farmer System</title>
     <link rel="stylesheet" href="style.css">
-    <title>Details from User</title>
 </head>
 <body>
-    <div class="login">
-    <form class="form" action="avilable_product.html">
-        <label for="uname">Full Name:</label>
-        <input type="text" name="uname" placeholder="John Doe" required>
-        <br><br>
+    <header class="header">
+        <div class="logo">Local Farmer System</div>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Products</a></li>
+                <li><a href="#">Cart</a></li>
+            </ul>
+        </nav>
+    </header>
     
-        <label for="uname">Enter your username:</label>
-        <input type="text" name="uname" placeholder="Jhon nick name ( John Doe )" required>
-        <br><br>
-
-        <label for="email">Email:</label>
-        <input type="email" name="email" placeholder="john541@gmail.com" required>
-        <br><br>
+    <main class="container">
+        <div class="login">
+            <h2>Register</h2>
+            <form class="form" action="available_product.html" method="POST">
+                <label for="full-name">Full Name:</label>
+                <input type="text" id="full-name" name="full_name" placeholder="John Doe" required>
+                
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" placeholder="JohnNickname" required>
+                
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="john541@gmail.com" required>
+                
+                <label for="dob">Date of Birth:</label>
+                <input type="date" id="dob" name="dob" required>
+                
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" placeholder="123 Street, City, Country" required>
+                
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location" placeholder="New York, USA" required>
+                
+                <input type="submit" value="Submit" class="button-85">
+            </form>
+        </div>
+    </main>
     
-        <label for="dob">Date of Birth:</label>
-        <input type="date" name="dob" required>
-        <br><br>
-    
-        <label for="address">Address:</label>
-        <input type="text" name="address" placeholder="123 Street, City, Country" required>
-        <br><br>
-    
-        <label for="location">Location:</label>
-        <input type="text" name="location" placeholder="New York, USA" required>
-        <br><br>
-    
-        <input type="submit" value="Submit">
-    </form>
-    </div>
+    <footer class="footer">
+        <p>&copy; 2024 Local Farmer System. All rights reserved.</p>
+    </footer>
 </body>
 </html>
