@@ -73,13 +73,11 @@ nav ul li a:hover {
 }
 
 .content {
-  background: #fff;
-  padding: 20px;
-  margin: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 90%;
+  width: 100%;
   max-width: 600px;
+  gap:20px;
 }
 
 .content h2 {
@@ -177,7 +175,7 @@ nav ul li a:hover {
 
 .button-85:before {
   content: "";
-  background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+  background: linear-gradient(45deg, #0000ff, #0055ff);
   position: absolute;
   top: -2px;
   left: -2px;
@@ -211,24 +209,22 @@ nav ul li a:hover {
   border-radius: 10px;
   z-index: -1;
 }
-
 .glowing-effect {
   position: relative;
 }
 
 .glowing-effect:before {
   content: "";
-  background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+  background: linear-gradient(45deg, #03f8cf, #0000ff,#0056b3,#007bff);
   position: absolute;
   top: -2px;
   left: -2px;
-  width: calc(100% );
-  height: calc(100%);
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
   background-size: 300%;
   z-index: -1;
-  filter: blur(5px);
+  filter: blur(8px);
   animation: glowing-animation 10s linear infinite;
-  transition: opacity 0.3s ease-in-out;
 }
 
 @keyframes glowing-animation {
@@ -245,13 +241,12 @@ nav ul li a:hover {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: #ac1111;
+  background: rgba(0, 0, 255, 0.3); /* Semi-transparent blue */
   left: 0;
   top: 0;
   border-radius: 10px;
   z-index: -1;
 }
-
 
 
 .product_list {
