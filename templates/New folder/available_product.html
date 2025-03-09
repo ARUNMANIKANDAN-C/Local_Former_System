@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
+    <title>product list</title>
+    <link rel="stylesheet" href="../../static/style.css">
+    <link rel="stylesheet" href="../../static/style1.css"> 
+    <script src="../../static/script.js"></script>
 </head>
 <body>
     <header class="header">
+        <div id="menu-toggle" class="menu-button">☰</div>
         <div class="logo">Local former system</div>
         <nav>
             <ul>
@@ -20,17 +22,18 @@
         </nav>
     </header>
     <main class="container">
-        <div class="content">
-            <form>
+
+        <div class="side-panel" id="sidePanel">
+            <h2>Filter Products</h2>
+            <form method="POST" action="{{ url_for('search_products') }}">
                 <input type="text" name="search" id="search" placeholder="Search">
                 <input type="text" name="product" id="product" placeholder="Product">
                 <input type="text" name="district" id="district" placeholder="District">
                 <input type="text" name="price" id="price" placeholder="Price">
-                <button>Search</button><br>
-                <button>Filter</button>
+                <button type="submit">Search</button>
+                <button type="submit" name="filter" value="true">Filter</button>
             </form>
-        </div>
-
+            </div>
         <div class="product_list">
             <div class="glowing-effect">
             <div class="product">
@@ -86,5 +89,6 @@
     <footer class="footer">
         <p>&copy; 2024 Local former system. All rights reserved.</p>
     </footer>
+</div>
 </body>
 </html>

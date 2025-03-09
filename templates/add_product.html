@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Avilable products{% endblock %}
+
+{% block content %}
+<div class="login">
+    <form class="form" action="available_product.html">
+        <table>
+            <tr>
+                <td><label for="productList">Select Product Category:</label></td>
+                <td>
+                    <select id="productList" name="product">
+                        <option value="onions">Onions</option>
+                        <option value="tomatoes">Tomatoes</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="productName">Add New Product:</label></td>
+                <td>
+                    <input type="text" id="productName" placeholder="Enter product name">
+                    <button type="button">Add</button>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="description">Product Description:</label></td>
+                <td><input type="text" name="description" placeholder="Fresh organic tomatoes" required></td>
+            </tr>
+            <tr>
+                <td><label for="Image">Upload your files:</label></td>
+                <td><input type="file" id="Image" name="Image" multiple></td>
+            </tr>
+            <tr>
+                <td><label for="availableKG">Available (KG):</label></td>
+                <td><input type="number" name="availableKG" placeholder="10" required></td>
+            </tr>
+            <tr>
+                <td><label for="pricePerQuantity">Price per Quantity:</label></td>
+                <td><input type="number" name="pricePerQuantity" placeholder="5" required></td>
+            </tr>
+            <tr>
+                <td><label for="quantityPerKG">Quantity per KG:</label></td>
+                <td><input type="number" name="quantityPerKG" placeholder="4" required></td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: center;">
+                    <input type="submit" value="Submit">
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

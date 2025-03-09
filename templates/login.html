@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="login">
+    <form class="form" method="POST" action="/login">
+        <label for="phone">Phone Number:</label>
+        <input type="tel" name="phone" id="phone" placeholder="+1234567890" required pattern="\+?\d{10,15}" autocomplete="tel">
+        
+        <label for="passkey">Enter your Password:</label>
+        <input type="password" name="passkey" id="passkey" placeholder="Your Password" required autocomplete="new-password">
+        
+        <input type="submit" value="Submit">
+
+        <p>If you haven't logged in before, please create an account:</p>
+        <button type="button" onclick="window.location.href='/sign_in'">Login to Create Account</button>
+    </form>
+</div>
+{% endblock %}

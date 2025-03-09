@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Avilable products{% endblock %}
+
+{% block content %}
+<div class="side-panel" id="sidePanel">
+    <h2>Filter Products</h2>
+    <form method="POST" action="{{ url_for('search_products') }}">
+        <input type="text" name="search" id="search" placeholder="Search">
+        <input type="text" name="product" id="product" placeholder="Product">
+        <input type="text" name="district" id="district" placeholder="District">
+        <input type="text" name="price" id="price" placeholder="Price">
+        <button type="submit">Search</button>
+        <button type="submit" name="filter" value="true">Filter</button>
+    </form>
+    </div>
+<div class="product_list">
+    {% for product in products %}
+    <div class="glowing-effect">
+        <div class="product">
+            <img src="{{ url_for('static', filename='images/' + product.image) }}" alt="product" class="img_product">
+            <h3>{{ product.name }}</h3>
+            <p>Price: ₹{{ product.price }}</p>
+            <button class="button-85">Add to cart</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

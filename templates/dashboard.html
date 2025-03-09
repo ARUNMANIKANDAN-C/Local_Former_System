@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Welcome to the Farmer Dashboard</h2>
+
+  <div class="row">
+    <!-- Summary Cards -->
+    <div class="col-md-3">
+      <div class="card text-white bg-success mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Crops</h5>
+          <p class="card-text">24</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card text-white bg-info mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Harvested This Month</h5>
+          <p class="card-text">12</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card text-white bg-warning mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Pending Tasks</h5>
+          <p class="card-text">5</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card text-white bg-danger mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Alerts</h5>
+          <p class="card-text">2</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table: Crop Details -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5 class="mb-0">Your Crops</h5>
+    </div>
+    <div class="card-body">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Crop Name</th>
+            <th>Planted Date</th>
+            <th>Status</th>
+            <th>Estimated Harvest</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tomato</td>
+            <td>2025-02-10</td>
+            <td>Growing</td>
+            <td>2025-03-20</td>
+          </tr>
+          <tr>
+            <td>Corn</td>
+            <td>2025-01-25</td>
+            <td>Ready to Harvest</td>
+            <td>2025-03-01</td>
+          </tr>
+          <!-- More crop rows here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

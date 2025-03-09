@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Available Products{% endblock %}
+
+{% block content %}
+
+    <h1 class="text-center my-4">Product Details</h1>
+
+    {% if product %}
+    <div class="card">
+        {% if product.image %}
+        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+        {% endif %}
+        <div class="card-body">
+            <h2 class="card-title">{{ product.name }}</h2>
+            <p><strong>Price:</strong> ₹{{ product.price }}</p>
+            <p><strong>Description:</strong> {{ product.description }}</p>
+            <p><strong>Category:</strong> {{ product.category }}</p>
+            <p><strong>Stock:</strong> {{ product.stock }}</p>
+        </div>
+    </div>
+    
+    <h3 class="mt-4">Customer Feedback</h3>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="text" class="form-control mb-2" name="name" placeholder="Your Name" required>
+        <textarea class="form-control mb-2" name="comment" rows="4" placeholder="Your Feedback" required></textarea>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    
+    <h3 class="mt-4">Reviews</h3>
+    {% for review in product.reviews.all %}
+        <div class="border p-3 my-2">
+            <p><strong>{{ review.name }}</strong> - {{ review.created_at }}</p>
+            <p>{{ review.comment }}</p>
+        </div>
+    {% else %}
+        <p>No reviews yet. Be the first to leave a review!</p>
+    {% endfor %}
+    {% else %}
+        <p class="text-center">Product not found.</p>
+    {% endif %}
+{% endblock %}
