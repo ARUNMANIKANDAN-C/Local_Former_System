@@ -7,22 +7,33 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style1.css') }}"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='about.css') }}"> 
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}" type="image/png">
 
     {% block scripts %}{% endblock %}
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <style> {% block style %} {% endblock %}  </style>
 </head>
 <body>
     <header class="header">
         <div id="menu-toggle" class="menu-button">☰</div>
+        <div style="width: 30px; height: 30px; border-radius: 50%; overflow: hidden;">
+            {% if image_exists %}
+                <img src="{{ url_for('static', filename='image_filename') }}" alt="User" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Default User" style="width: 100%; height: 100%; object-fit: cover;">
+            {% endif %}
+        </div>
         <div class="logo">Local farmer system</div>
         <nav>
             <ul>
                 <li><a href="#">Home</a></li>
-                <li><a href="#">About</a></li>
+                <li><a href="../about">About</a></li>
                 <li><a href="#">Products</a></li>
                 <li><a href="#">Cart</a></li>
             </ul>
         </nav>
+        <div class="user-logo">
     </header>
     <main class="container">
         {% block content %}{% endblock %}

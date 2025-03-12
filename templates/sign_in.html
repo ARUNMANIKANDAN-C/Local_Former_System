@@ -2,8 +2,6 @@
 
 {% block title %}siginup{% endblock %}
 
-{% block content %}
-
 {% block scripts %}
 <script>
     function generateOTP() {
@@ -27,28 +25,24 @@
     }
 </script>
 {% endblock %}
-
+{% block content %}
 <div class="login">
-    <form class="form" action="details.html" method="POST">
+    <form class="form" action="/login" method="POST">
             <label for="phone">Phone Number:</label>
             <input type="tel" name="phone" id="phone" placeholder="+1234567890" 
                 required pattern="\+?\d{10,15}" inputmode="numeric" autocomplete="tel"
                 title="Enter a valid phone number with 10 to 15 digits.">
-            <br><br>
     
             <label for="passkey">Enter your Password:</label>
             <input type="password" name="passkey" id="passkey" placeholder="Your Password"
                 required autocomplete="current-password">
-            <br><br>
     
             <button type="button" onclick="generateOTP()">Get OTP</button>
-            <br><br>
-    
+
             <label for="otp">Enter your OTP:</label>
             <input type="text" name="OTP" id="otp" placeholder="123456" required 
                 pattern="\d{4,6}" inputmode="numeric" autocomplete="off"
                 title="Enter a 4 to 6-digit OTP." disabled>
-            <br><br>
     
             <input type="submit" id="submit-btn" value="Submit" disabled>
         </fieldset>

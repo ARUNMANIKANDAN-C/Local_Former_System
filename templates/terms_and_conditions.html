@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Welcome to Local Farmer Market</title>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: auto;
+            text-align: left;
+        }
+        .welcome p, .welcome ul, .welcome label {
+            margin-left: 20px;
+        }
+        .welcome ul {
+            padding-left: 40px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Local Farmer Market</div>
+    </header>
+    
+    <main class="container">
+        <section class="welcome">
+            <h1>Welcome to Local Farmer Market</h1>
+            <p>Our platform connects local farmers directly with customers, ensuring fresh and organic produce at fair prices. 
+               Support local farmers and enjoy the best farm-to-table experience.</p>
+            <h2>Terms and Conditions</h2>
+            <p>By using our platform, you agree to the following:</p>
+            <ul>
+                <li>All transactions are between farmers and customers directly.</li>
+                <li>We do not take responsibility for product quality, but we encourage honest reviews.</li>
+                <li>Users must respect fair trade policies and ethical farming practices.</li>
+            </ul>
+            <label>
+                <input type="checkbox" id="agreeCheckbox"> I agree to the Terms and Conditions
+            </label>
+            <br><br>
+            <button onclick="proceed()" class="btn" id="proceedBtn" disabled>Proceed</button>
+        </section>
+        
+        <section id="selection" class="selection" style="display: none;">
+            <h2>Are you a Farmer or a Customer?</h2>
+            <a href="/login" class="btn">Farmer</a>
+            <a href="customer_login.html" class="btn">Customer</a>
+        </section>
+    </main>
+    
+    <footer class="footer">
+        <p>&copy; 2024 Local Farmer Market. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        document.getElementById('agreeCheckbox').addEventListener('change', function() {
+            document.getElementById('proceedBtn').disabled = !this.checked;
+        });
+        
+        function proceed() {
+            document.querySelector('.welcome').style.display = 'none';
+            document.getElementById('selection').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

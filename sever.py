@@ -1,18 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_wtf.csrf import CSRFProtect
 from datetime import datetime
+from database import FarmManagementDB
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
-csrf = CSRFProtect(app)
+app.secret_key = os.urandom(24)  # Secure secret key
 
+db = FarmManagementDB()
 # ------------------------
 # Dummy User Data
 # ------------------------
 users = {
     '1234567890': 'pass1234'
 }
-
 # ------------------------
 # Sample Data
 # ------------------------
@@ -41,7 +42,23 @@ products = [
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for("home"))
+
+@app.route('/details', methods=['GET', 'POST'])
+def details():
+    if request.method == 'POST':
+        name = request.form.get('full-name')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        dob = request.form.get('dob')
+        phone = request.form.get('address')
+        message = request.form.get('message')
+        try:
+            db.add_details(name, username, email, dob, phone, message)
+        except Exception as e:
+            print(e)
+        flash('Details submitted successfully!', 'success')
+    return render_template('details.html')
 
 # ---------- Home & Reviews ----------
 
@@ -98,13 +115,17 @@ def search_products():
 
 # ---------- Auth ----------
 
+@app.route('/terms_and_conditions')
+def temers_and_conditions():
+    return render_template('terms_and_conditions.html')
+
 @app.route('/sign_in', methods=['GET', 'POST'])
 def sign_up():
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        print(f"New user signed up: {username}, {email}, {password}")
+        username = request.form.get('phone')
+        password = request.form.get('passkey')
+        db.add_users(username, password)
+        return redirect(url_for('login'))
     return render_template('sign_in.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -124,7 +145,7 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-    return render_template('Dashboard.html')
+    return render_template('dashboard.html')
 
 # ---------- Product List & Detail ----------
 
@@ -138,6 +159,15 @@ def product_detail(product_id):
     if not product:
         return "Product not found", 404
     return render_template('product_detail.html', product=product)
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route('/urls')
+def all_urls():
+    return render_template('urls.html')
+
 
 # ------------------------
 # Run the App

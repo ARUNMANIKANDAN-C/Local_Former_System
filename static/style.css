@@ -50,6 +50,16 @@ nav ul {
   margin: 0;
 }
 
+.welcome{
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: large;
+  align-items: left;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+
+}
 
 nav ul li a {
   text-decoration: none;
@@ -64,6 +74,7 @@ nav ul li a:hover {
   color: rgb(0, 0, 0);
   text-decoration: underline;
 }
+
 
 /* Logo Styling */
 .logo {

@@ -12,6 +12,12 @@ class FarmManagementDB:
         conn = self.connect_db()
         cursor = conn.cursor()
         cursor.executescript('''
+            CREATE TABLE IF NOT EXISTS user (
+                user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                phone_number TEXT,
+                password TEXT
+            );
+
             CREATE TABLE IF NOT EXISTS customer (
                 customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
@@ -38,7 +44,7 @@ class FarmManagementDB:
                 address TEXT,
                 google_location_id TEXT
             );
-            
+
             CREATE TABLE IF NOT EXISTS customer_to_farmer_feedback (
                 feedback_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER,
@@ -56,7 +62,7 @@ class FarmManagementDB:
                 FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
                 FOREIGN KEY (delivery_person_id) REFERENCES delivery_person(delivery_person_id)
             );
-            
+
             CREATE TABLE IF NOT EXISTS product_items (
                 product_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 product_name TEXT
@@ -81,7 +87,7 @@ class FarmManagementDB:
                 FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
                 FOREIGN KEY (product_id) REFERENCES product_items(product_id)
             );
-            
+
             CREATE TABLE IF NOT EXISTS payment (
                 payment_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER,
@@ -93,6 +99,18 @@ class FarmManagementDB:
         conn.commit()
         conn.close()
 
+    def add_users(self, phone_number, password):
+        conn = self.connect_db()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO user (phone_number, password)
+            VALUES (?, ?)""", (phone_number, password))
+        conn.commit()
+        conn.close()
+        return True
+    
+    def add_users_detials(self):
+        pass
     def insert_customer(self, name, phone_number, email, address, google_location_id):
         conn = self.connect_db()
         cursor = conn.cursor()
@@ -161,6 +179,7 @@ class FarmManagementDB:
         payments = cursor.fetchall()
         conn.close()
         return payments
+
 
 if __name__ == "__main__":
     db = FarmManagementDB()

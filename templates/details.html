@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}details{% endblock %}
+
+{% block content %}
+
+<div class="login">
+    <h2>Register</h2>
+    <form class="form" action="/available_product" method="POST">
+        <label for="full-name">Full Name:</label>
+        <input type="text" id="full-name" name="full_name" placeholder="John Doe" required>
+        
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" placeholder="JohnNickname" required>
+        
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="john541@gmail.com" required>
+        
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="dob" name="dob" required>
+        
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address" placeholder="123 Street, City, Country" required>
+        
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" placeholder="New York, USA" required>
+        
+        <input type="submit" value="Submit" class="button-85">
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
