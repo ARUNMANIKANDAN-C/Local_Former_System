@@ -1,0 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+ENV/
+venv/
+(web)/
+
+# VSCode settings
+.vscode/
+
+# Pytest and coverage reports
+.pytest_cache/
+.coverage
+htmlcov/
+
+# MyPy
+.mypy_cache/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python egg metadata
+*.egg-info/
+*.egg
+
+# Static/media (if dynamically generated)
+staticfiles/
+media/
+
+# GitHub workflows cache (if any)
+.github/workflows/__pycache__/
+
+# Backup files
+*.bak
+*.swp
+*~
+
+# Ignore secrets (optional, if you ever store any keys/configs)
+.env
+.env.*
+
+# Ignore compiled templates (optional, if generated)
+templates/**/__pycache__/
+templates/**/*.pyc
+templates/**/*

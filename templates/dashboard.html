@@ -1,82 +1,86 @@
-{% extends "base.html" %}
-
-{% block title %}Farmer Dashboard{% endblock %}
-
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="container mt-4">
-  <h2 class="mb-4">Welcome to the Farmer Dashboard</h2>
 
-  <div class="row">
-    <!-- Summary Cards -->
-    <div class="col-md-3">
-      <div class="card text-white bg-success mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Total Crops</h5>
-          <p class="card-text">24</p>
-        </div>
-      </div>
+<div class="dashboard-container">
+  <h2>Welcome, {{ user.name }} 👋</h2>
+
+  <!-- Stat Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Total Products</h3>
+      <p>{{ total_products }}</p>
     </div>
-
-    <div class="col-md-3">
-      <div class="card text-white bg-info mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Harvested This Month</h5>
-          <p class="card-text">12</p>
-        </div>
-      </div>
+    <div class="stat-card">
+      <h3>Total Orders</h3>
+      <p>{{ total_orders }}</p>
     </div>
-
-    <div class="col-md-3">
-      <div class="card text-white bg-warning mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Pending Tasks</h5>
-          <p class="card-text">5</p>
-        </div>
-      </div>
+    <div class="stat-card">
+      <h3>This Month's Sales</h3>
+      <p>₹{{ monthly_sales }}</p>
     </div>
-
-    <div class="col-md-3">
-      <div class="card text-white bg-danger mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Alerts</h5>
-          <p class="card-text">2</p>
-        </div>
-      </div>
+    <div class="stat-card">
+      <h3>Top Buyer</h3>
+      <p>{{ top_buyer }}</p>
     </div>
   </div>
 
-  <!-- Table: Crop Details -->
-  <div class="card mt-4">
-    <div class="card-header">
-      <h5 class="mb-0">Your Crops</h5>
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Crop Name</th>
-            <th>Planted Date</th>
-            <th>Status</th>
-            <th>Estimated Harvest</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Tomato</td>
-            <td>2025-02-10</td>
-            <td>Growing</td>
-            <td>2025-03-20</td>
-          </tr>
-          <tr>
-            <td>Corn</td>
-            <td>2025-01-25</td>
-            <td>Ready to Harvest</td>
-            <td>2025-03-01</td>
-          </tr>
-          <!-- More crop rows here -->
-        </tbody>
-      </table>
-    </div>
+  <!-- Sales Chart -->
+  <div class="chart-section">
+    <h3>Sales Overview</h3>
+    <canvas id="salesChart" height="100"></canvas>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="orders-section">
+    <h3>Latest Orders</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Product</th>
+          <th>Buyer</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in recent_orders %}
+        <tr>
+          <td>{{ order.id }}</td>
+          <td>{{ order.product }}</td>
+          <td>{{ order.buyer }}</td>
+          <td>{{ order.status }}</td>
+          <td>{{ order.date }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  const salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ chart_labels|tojson }},
+      datasets: [{
+        label: 'Sales ₹',
+        data: {{ chart_data|tojson }},
+        borderColor: 'green',
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+</script>
+
 {% endblock %}

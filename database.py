@@ -9,185 +9,173 @@ class FarmManagementDB:
         return sqlite3.connect(self.db_name)
 
     def create_tables(self):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.executescript('''
-            CREATE TABLE IF NOT EXISTS user (
-                user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                phone_number TEXT,
-                password TEXT
-            );
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.executescript('''
+                    CREATE TABLE IF NOT EXISTS user (
+                        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        phone_number TEXT,
+                        password TEXT
+                    );
 
-            CREATE TABLE IF NOT EXISTS customer (
-                customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                phone_number TEXT,
-                email TEXT,
-                address TEXT,
-                google_location_id TEXT
-            );
+                    CREATE TABLE IF NOT EXISTS er_Farmer (
+                        FarmerID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Name TEXT NOT NULL,
+                        AadharNumber TEXT UNIQUE NOT NULL CHECK (length(AadharNumber) = 12),
+                        Contact TEXT CHECK (length(Contact) BETWEEN 10 AND 15),
+                        Address TEXT
+                    );
 
-            CREATE TABLE IF NOT EXISTS farmer (
-                farmer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                phone_number TEXT,
-                email TEXT,
-                address TEXT,
-                google_location_id TEXT
-            );
+                    CREATE TABLE IF NOT EXISTS er_Crop (
+                        CropID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Name TEXT NOT NULL,
+                        Price REAL NOT NULL CHECK (Price > 0),
+                        FarmerID INTEGER NOT NULL,
+                        FOREIGN KEY (FarmerID) REFERENCES er_Farmer(FarmerID) ON DELETE CASCADE,
+                        UNIQUE(FarmerID, Name)
+                    );
 
-            CREATE TABLE IF NOT EXISTS delivery_person (
-                delivery_person_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                phone_number TEXT,
-                email TEXT,
-                address TEXT,
-                google_location_id TEXT
-            );
+                    CREATE TABLE IF NOT EXISTS er_Customer (
+                        CustomerID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Name TEXT NOT NULL,
+                        Contact TEXT CHECK (length(Contact) BETWEEN 10 AND 15),
+                        Address TEXT
+                    );
 
-            CREATE TABLE IF NOT EXISTS customer_to_farmer_feedback (
-                feedback_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                customer_id INTEGER,
-                feedback_message TEXT,
-                farmer_id INTEGER,
-                FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
-                FOREIGN KEY (farmer_id) REFERENCES farmer(farmer_id)
-            );
+                    CREATE TABLE IF NOT EXISTS er_Orders (
+                        OrderID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        CustomerID INTEGER NOT NULL,
+                        OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        Status TEXT DEFAULT 'Pending',
+                        FOREIGN KEY (CustomerID) REFERENCES er_Customer(CustomerID) ON DELETE CASCADE
+                    );
 
-            CREATE TABLE IF NOT EXISTS customer_to_delivery_feedback (
-                feedback_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                customer_id INTEGER,
-                feedback_message TEXT,
-                delivery_person_id INTEGER,
-                FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
-                FOREIGN KEY (delivery_person_id) REFERENCES delivery_person(delivery_person_id)
-            );
+                    CREATE TABLE IF NOT EXISTS er_OrderDetails (
+                        OrderDetailID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        OrderID INTEGER NOT NULL,
+                        CropID INTEGER NOT NULL,
+                        Quantity INTEGER NOT NULL CHECK (Quantity > 0),
+                        FOREIGN KEY (OrderID) REFERENCES er_Orders(OrderID) ON DELETE CASCADE,
+                        FOREIGN KEY (CropID) REFERENCES er_Crop(CropID) ON DELETE CASCADE
+                    );
 
-            CREATE TABLE IF NOT EXISTS product_items (
-                product_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                product_name TEXT
-            );
+                    CREATE TABLE IF NOT EXISTS er_Payment (
+                        PaymentID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        OrderID INTEGER NOT NULL,
+                        Amount REAL NOT NULL CHECK (Amount >= 0),
+                        PaymentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        Status TEXT DEFAULT 'Pending',
+                        FOREIGN KEY (OrderID) REFERENCES er_Orders(OrderID) ON DELETE CASCADE
+                    );
 
-            CREATE TABLE IF NOT EXISTS sales_product (
-                sales_product_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                product_id INTEGER,
-                farmer_id INTEGER,
-                quantity_kg REAL,
-                available_quantity REAL,
-                description TEXT,
-                image_url TEXT,
-                FOREIGN KEY (product_id) REFERENCES product_items(product_id),
-                FOREIGN KEY (farmer_id) REFERENCES farmer(farmer_id)
-            );
+                    CREATE TABLE IF NOT EXISTS er_Delivery (
+                        DeliveryID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        OrderID INTEGER NOT NULL,
+                        Location TEXT NOT NULL,
+                        DeliveryDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        Status TEXT DEFAULT 'Pending',
+                        FOREIGN KEY (OrderID) REFERENCES er_Orders(OrderID) ON DELETE CASCADE
+                    );
 
-            CREATE TABLE IF NOT EXISTS add_cart (
-                cart_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                customer_id INTEGER,
-                product_id INTEGER,
-                FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
-                FOREIGN KEY (product_id) REFERENCES product_items(product_id)
-            );
+                    CREATE TABLE IF NOT EXISTS er_Feedback (
+                        FeedbackID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        CustomerID INTEGER NOT NULL,
+                        OrderID INTEGER NOT NULL,
+                        Comments TEXT,
+                        Rating INTEGER CHECK (Rating BETWEEN 1 AND 5),
+                        FOREIGN KEY (CustomerID) REFERENCES er_Customer(CustomerID) ON DELETE CASCADE,
+                        FOREIGN KEY (OrderID) REFERENCES er_Orders(OrderID) ON DELETE CASCADE
+                    );
+                ''')
+                conn.commit()
+        except sqlite3.Error as e:
+            print("[create_tables] Error:", e)
 
-            CREATE TABLE IF NOT EXISTS payment (
-                payment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                customer_id INTEGER,
-                amount REAL,
-                status TEXT,
-                FOREIGN KEY (customer_id) REFERENCES customer(customer_id)
-            );
-        ''')
-        conn.commit()
-        conn.close()
+    # ------------------ INSERT FUNCTIONS ------------------
+    def insert_farmer(self, name, aadhar, contact, address):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO er_Farmer (Name, AadharNumber, Contact, Address) VALUES (?, ?, ?, ?)",
+                               (name, aadhar, contact, address))
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"[insert_farmer] Error inserting farmer: {e}")
+            return None
 
-    def add_users(self, phone_number, password):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO user (phone_number, password)
-            VALUES (?, ?)""", (phone_number, password))
-        conn.commit()
-        conn.close()
-        return True
-    
-    def add_users_detials(self):
-        pass
-    def insert_customer(self, name, phone_number, email, address, google_location_id):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO customer (name, phone_number, email, address, google_location_id)
-            VALUES (?, ?, ?, ?, ?)""", (name, phone_number, email, address, google_location_id))
-        conn.commit()
-        conn.close()
+    def insert_crop(self, name, price, farmer_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO er_Crop (Name, Price, FarmerID) VALUES (?, ?, ?)",
+                               (name, price, farmer_id))
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"[insert_crop] Error inserting crop: {e}")
+            return None
 
-    def get_all_customers(self):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM customer")
-        customers = cursor.fetchall()
-        conn.close()
-        return customers
+    def insert_customer(self, name, contact, address):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO er_Customer (Name, Contact, Address) VALUES (?, ?, ?)",
+                               (name, contact, address))
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"[insert_customer] Error inserting customer: {e}")
+            return None
 
-    def insert_farmer(self, name, phone_number, email, address, google_location_id):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO farmer (name, phone_number, email, address, google_location_id)
-            VALUES (?, ?, ?, ?, ?)""", (name, phone_number, email, address, google_location_id))
-        conn.commit()
-        conn.close()
+    def insert_order(self, customer_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO er_Orders (CustomerID) VALUES (?)", (customer_id,))
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"[insert_order] Error inserting order: {e}")
+            return None
 
-    def get_all_farmers(self):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM farmer")
-        farmers = cursor.fetchall()
-        conn.close()
-        return farmers
+    def insert_order_detail(self, order_id, crop_id, quantity):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO er_OrderDetails (OrderID, CropID, Quantity) VALUES (?, ?, ?)",
+                               (order_id, crop_id, quantity))
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"[insert_order_detail] Error inserting order detail: {e}")
+            return None
 
-    def insert_feedback_customer_to_farmer(self, customer_id, feedback_message, farmer_id):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO customer_to_farmer_feedback (customer_id, feedback_message, farmer_id)
-            VALUES (?, ?, ?)""", (customer_id, feedback_message, farmer_id))
-        conn.commit()
-        conn.close()
+    def insert_payment(self, order_id, amount):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO er_Payment (OrderID, Amount) VALUES (?, ?)",
+                               (order_id, amount))
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"[insert_payment] Error inserting payment: {e}")
+            return None
 
-    def insert_feedback_customer_to_delivery(self, customer_id, feedback_message, delivery_person_id):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO customer_to_delivery_feedback (customer_id, feedback_message, delivery_person_id)
-            VALUES (?, ?, ?)""", (customer_id, feedback_message, delivery_person_id))
-        conn.commit()
-        conn.close()
+    def insert_delivery(self, order_id, location):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO er_Delivery (OrderID, Location) VALUES (?, ?)",
+                               (order_id, location))
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"[insert_delivery] Error inserting delivery: {e}")
+            return None
 
-    def insert_payment(self, customer_id, amount, status):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO payment (customer_id, amount, status)
-            VALUES (?, ?, ?)""", (customer_id, amount, status))
-        conn.commit()
-        conn.close()
-
-    def get_all_payments(self):
-        conn = self.connect_db()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM payment")
-        payments = cursor.fetchall()
-        conn.close()
-        return payments
-
-
-if __name__ == "__main__":
-    db = FarmManagementDB()
-    db.insert_customer("John Doe", "1234567890", "johndoe@example.com", "123 Main St", "loc123")
-    db.insert_farmer("Alice Smith", "9876543210", "alice@example.com", "456 Farm Rd", "loc456")
-    db.insert_feedback_customer_to_farmer(1, "Great produce!", 1)
-    db.insert_payment(1, 20.5, "Completed")
-    
-    print("Customers:", db.get_all_customers())
-    print("Farmers:", db.get_all_farmers())
-    print("Payments:", db.get_all_payments())
+    def insert_feedback(self, customer_id, order_id, comments, rating):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO er_Feedback (CustomerID, OrderID, Comments, Rating) VALUES (?, ?, ?, ?)",
+                               (customer_id, order_id, comments, rating))
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"[insert_feedback] Error inserting feedback: {e}")
+            return None

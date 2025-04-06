@@ -2,52 +2,67 @@
 
 {% block title %}Home{% endblock %}
 {% block style %} 
-body {
-  font-family: Arial, sans-serif;
-  margin: 40px;
-  background-color: #f4f4f4;
-}
-h1, h2 {
-  color: #2e8b57;
+.waper {
+    width: 90%;
+    height: 100%;
+    background-color:rgb(255, 255, 255);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px #ccc;
 }
 .button-container {
+  display: flex;
+  justify-content: center;
   margin-top: 20px;
 }
-.home-button {
-  background-color: #2e8b57;
-  color: white;
-  padding: 12px 24px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-right: 10px;
-  transition: background-color 0.3s ease;
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
-.home-button:hover {
-  background-color: #246b45;
+h2 {
+  color: #27ae60;
+  margin-bottom: 15px;
 }
-
-.waper{
-  background-color: white;
-  padding: 20px;
-  margin-top: 30px;
-  border-radius: 10px;
-  box-shadow: 0px 0px 10px #ccc;
+p {
+  color: #34495e;
+  font-size: 18px;
+  line-height: 1.6;
+}
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  margin: 10px 0;
+  color: #34495e;
+  font-size: 18px;
+  padding-left: 20px;
+  position: relative;
+}
+li:before {
+  content: "•";
+  color: #27ae60;
+  position: absolute;
+  left: 0;
 }
 section {
-  background-color: white;
-  padding: 20px;
-  margin-top: 30px;
-  border-radius: 10px;
-  box-shadow: 0px 0px 10px #ccc;
-  max-width: 800px;
+  margin: 25px 0;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border-left: 4px solid #27ae60;
+  transition: transform 0.3s ease;
+}
+section:hover {
+  transform: translateY(-5px);
 }
 {% endblock %} 
 
 {% block content %}
-<div class="waper">
 
+<div class="waper">
 
 <h1>Welcome to Local Farmer Support</h1>
 <p>Empowering communities through sustainable agriculture and local food systems.</p>
