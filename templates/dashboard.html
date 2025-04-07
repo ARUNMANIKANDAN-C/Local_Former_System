@@ -1,9 +1,109 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 
+<style>
+  .dashboard-container {
+    padding: 2rem;
+    max-width: 100%;
+    margin: auto;
+    background: #f0fff0;
+    border-radius: 16px;
+    margin:10px;
+  }
+
+  .stats-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    flex: 1 1 calc(25% - 1rem);
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+    text-align: center;
+    min-width: 200px;
+  }
+
+  .stat-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.4rem;
+    color: #555;
+  }
+
+  .stat-card p {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .charts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-between;
+  }
+
+  .chart-card {
+    flex: 1 1 calc(50% - 1rem);
+    background: #fff;
+    padding: 1.2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+    min-width: 300px;
+  }
+
+  .chart-card canvas {
+    max-height: 280px;
+  }
+
+  .orders-section {
+    margin-top: 2.5rem;
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    min-width: 700px;
+  }
+
+  table th, table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eaeaea;
+  }
+
+  table th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    .stat-card, .chart-card {
+      flex: 1 1 100%;
+    }
+
+    .orders-section {
+      overflow-x: scroll;
+    }
+  }
+</style>
+
 <div class="dashboard-container">
-  <h2>Welcome, {{ user.name }} 👋</h2>
+
+  <h2 class="logo" style="margin:10px;">Welcome, {{ user.name }} 👋</h2>
+
 
   <!-- Stat Cards -->
   <div class="stats-grid">
@@ -25,13 +125,27 @@
     </div>
   </div>
 
-  <!-- Sales Chart -->
-  <div class="chart-section">
-    <h3>Sales Overview</h3>
-    <canvas id="salesChart" height="100"></canvas>
+  <!-- Charts in Grid -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Sales Overview</h3>
+      <canvas id="salesChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Product-wise Sales</h3>
+      <canvas id="productSalesChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Customer Types</h3>
+      <canvas id="customerTypeChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Marketing Campaign Performance</h3>
+      <canvas id="campaignChart"></canvas>
+    </div>
   </div>
 
-  <!-- Recent Orders -->
+  <!-- Recent Orders Table -->
   <div class="orders-section">
     <h3>Latest Orders</h3>
     <table>
@@ -59,11 +173,11 @@
   </div>
 </div>
 
-<!-- Chart.js -->
+<!-- Chart.js Scripts (same as before) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   const ctx = document.getElementById('salesChart').getContext('2d');
-  const salesChart = new Chart(ctx, {
+  new Chart(ctx, {
     type: 'line',
     data: {
       labels: {{ chart_labels|tojson }},
@@ -71,7 +185,48 @@
         label: 'Sales ₹',
         data: {{ chart_data|tojson }},
         borderColor: 'green',
-        fill: false
+        backgroundColor: 'rgba(0, 128, 0, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '₹' + value;
+            }
+          }
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return '₹' + context.parsed.y;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const productSalesCtx = document.getElementById('productSalesChart').getContext('2d');
+  new Chart(productSalesCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ product_names|tojson }},
+      datasets: [{
+        label: 'Units Sold',
+        data: {{ product_sales|tojson }},
+        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
       }]
     },
     options: {
@@ -81,6 +236,42 @@
       }
     }
   });
-</script>
 
+  const customerTypeCtx = document.getElementById('customerTypeChart').getContext('2d');
+  new Chart(customerTypeCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['New Customers', 'Returning Customers'],
+      datasets: [{
+        data: {{ customer_type_data|tojson }},
+        backgroundColor: ['#FF6384', '#36A2EB']
+      }]
+    },
+    options: { responsive: true }
+  });
+
+  const campaignChartCtx = document.getElementById('campaignChart').getContext('2d');
+  new Chart(campaignChartCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ campaign_names|tojson }},
+      datasets: [{
+        label: 'Conversion Rate (%)',
+        data: {{ campaign_data|tojson }},
+        backgroundColor: 'rgba(255, 206, 86, 0.6)',
+        borderColor: 'rgba(255, 206, 86, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100
+        }
+      }
+    }
+  });
+</script>
 {% endblock %}

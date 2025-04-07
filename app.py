@@ -98,7 +98,6 @@ def about():
     return render_template("about.html")
 
 @app.route('/details', methods=['GET', 'POST'])
-@login_required
 def details():
     if request.method == 'POST':
         try:
@@ -190,29 +189,31 @@ def add_product():
 # ------------------------
 # Dashboard
 # ------------------------
-@app.route('/dashboard')
-@login_required
+@app.route("/dashboard")
 def dashboard():
-    return render_template(
-        'dashboard.html',
-        user={"name": "Ravi Kumar"},
-        total_products=12,
-        total_orders=34,
-        monthly_sales=5400,
-        top_buyer="Ramesh Traders",
+    return render_template("dashboard.html",
+        user={"name": "Alex"},
+        total_products=125,
+        total_orders=342,
+        monthly_sales=450000,
+        top_buyer="John Doe",
         recent_orders=[
-            {"id": "ORD001", "product": "Tomatoes", "buyer": "Ramesh", "status": "Shipped", "date": "2025-04-04"},
-            {"id": "ORD002", "product": "Wheat", "buyer": "Sita", "status": "Pending", "date": "2025-04-03"},
+            {"id": "ORD001", "product": "Shoes", "buyer": "Alice", "status": "Shipped", "date": "2025-04-06"},
+            {"id": "ORD002", "product": "Watch", "buyer": "Bob", "status": "Pending", "date": "2025-04-07"},
         ],
-        chart_labels=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        chart_data=[800, 900, 1200, 1100, 1300, 1400, 1000]
+        chart_labels=["Jan", "Feb", "Mar", "Apr"],
+        chart_data=[120000, 150000, 130000, 50000],
+        product_names=["Shoes", "Watch", "Shirts"],
+        product_sales=[150, 100, 200],
+        customer_type_data=[70, 30],
+        campaign_names=["Email", "Social Media", "Flyers"],
+        campaign_data=[40, 60, 20]
     )
 
 # ------------------------
 # URL Inspector (Debug)
 # ------------------------
 @app.route('/urls')
-@login_required
 def all_urls():
     endpoints = []
     for rule in app.url_map.iter_rules():
