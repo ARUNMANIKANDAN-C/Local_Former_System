@@ -1,21 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_wtf import FlaskForm
-from flask_wtf.csrf import CSRFProtect
-from datetime import datetime
-from databasetest import FarmManagementDB
+from datetime import datetime, timedelta
+from database import FarmManagementDB
+import random
+import smtplib
 import os
 from functools import wraps
+from otp_sender import GmailSender
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24))
-#csrf = CSRFProtect(app)
-db = FarmManagementDB()
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'fallback-hardcoded-key'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(weeks=1)
 
-# Mock user data for login (replace with db calls in production)
-users = {
-    "9876543210": "password123",
-    "9123456789": "pass456"
-}
+db = FarmManagementDB()
+sender = GmailSender()
 
 # ------------------------
 # Login Required Decorator
@@ -47,17 +45,29 @@ def internal_error(error):
 def login():
     if 'user' in session:
         return redirect(url_for('dashboard'))
-        
-    if request.method == 'POST':
-        phone = request.form.get('phone')
-        password = request.form.get('passkey')
 
-        if phone in users and users[phone] == password:
-            session['user'] = phone
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        flash('Invalid phone number or password.', 'danger')
-        return redirect(url_for('login'))
+    if request.method == 'POST':
+        try:
+            phone = request.form.get('phone')
+            password = request.form.get('passkey')
+            (
+                EmailID,
+                Name,
+                PhoneNumber,
+                Password,
+                Address,
+                CreatedAt,
+                UserType
+            ) = db.get_user_by_email(phone)
+
+            if phone == PhoneNumber and password == Password:
+                session['user'] = phone
+                flash('Login successful!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Incorrect phone or password.', 'danger')
+        except Exception as e:
+            flash(f'Invalid phone or password. Error: {e}', 'danger')
 
     return render_template('login.html')
 
@@ -68,15 +78,68 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
-@app.route('/sign_in', methods=['GET', 'POST'])
-def sign_up():
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
     if request.method == 'POST':
-        username = request.form.get('phone')
+        name = request.form.get('name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
         password = request.form.get('passkey')
-        db.add_users(username, password)
-        flash('Sign up successful! Please log in.', 'success')
-        return redirect(url_for('login'))
-    return render_template('sign_in.html')
+        address = request.form.get('address')
+        usertype = request.form.get('usertype')
+
+        otp = str(random.randint(1000, 9999))
+        session['pending_user'] = {
+            'name': name,
+            'email': email,
+            'phone': phone,
+            'password': password,
+            'address': address,
+            'usertype': usertype,
+            'otp': otp
+        }
+
+        try:
+            sender.send_email(
+                to_email=email,
+                subject="OTP for Signup",
+                body=f"Your OTP for signup is: {otp}"
+            )
+            flash("OTP sent to your email. Please verify to complete signup.", "info")
+            return redirect(url_for('verify_otp'))
+        except Exception as e:
+            flash(f"Failed to send OTP: {e}", 'danger')
+            return redirect(url_for('signup'))
+
+    return render_template('signup.html')
+
+@app.route('/verify_otp', methods=['GET', 'POST'])
+def verify_otp():
+    if request.method == 'POST':
+        user_input_otp = request.form.get('otp')
+        real_otp = session.get('pending_user', {}).get('otp')
+
+        if user_input_otp == real_otp:
+            try:
+                user = session['pending_user']
+                db.insert_user(
+                    user['name'],
+                    user['email'],
+                    user['phone'],
+                    user['password'],
+                    user['address'],
+                    user['usertype'],
+                )
+                flash('Signup successful! Please log in.', 'success')
+                session.pop('pending_user')
+                return redirect(url_for('login'))
+            except Exception as e:
+                flash(f"Signup failed: {e}", 'danger')
+                return redirect(url_for('signup'))
+        else:
+            flash('Incorrect OTP. Please try again.', 'danger')
+
+    return render_template('verify_otp.html')
 
 @app.route('/terms_and_conditions')
 def terms_and_conditions():
@@ -125,8 +188,6 @@ def details():
 # ------------------------
 # Products
 # ------------------------
-
-# Dummy product list for demo
 products = [
     {"name": "Tomatoes", "price": 50, "district": "Salem"},
     {"name": "Wheat", "price": 30, "district": "Madurai"},
@@ -190,6 +251,7 @@ def add_product():
 # Dashboard
 # ------------------------
 @app.route("/dashboard")
+@login_required
 def dashboard():
     return render_template("dashboard.html",
         user={"name": "Alex"},
@@ -205,9 +267,7 @@ def dashboard():
         chart_data=[120000, 150000, 130000, 50000],
         product_names=["Shoes", "Watch", "Shirts"],
         product_sales=[150, 100, 200],
-        customer_type_data=[70, 30],
-        campaign_names=["Email", "Social Media", "Flyers"],
-        campaign_data=[40, 60, 20]
+        customer_type_data=[70, 30]
     )
 
 # ------------------------
@@ -236,4 +296,4 @@ def test():
 # ------------------------
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=port, debug=True)

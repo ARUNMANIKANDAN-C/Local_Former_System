@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify OTP{% endblock %}
+
+{% block content %}
+<div class="verify">
+    <form class="form" action="/verify_otp" method="POST">
+        <label for="otp">Enter the OTP sent to your email:</label>
+        <input type="text" name="otp" id="otp" required pattern="\d{4}" title="Enter 4-digit OTP">
+
+        <button type="submit">Verify & Complete Signup</button>
+    </form>
+</div>
+{% endblock %}

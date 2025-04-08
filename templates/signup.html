@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Signup{% endblock %}
+
+{% block content %}
+<div class="login">
+    <form class="form" method="POST">
+        <label for="name">Full Name:</label>
+        <input type="text" name="name" id="name" placeholder="John Doe" required>
+
+        <label for="email">Email ID:</label>
+        <input type="email" name="email" id="email" placeholder="you@example.com" required>
+
+        <label for="phone">Phone Number:</label>
+        <input type="tel" name="phone" id="phone" placeholder="1234567890"
+               required pattern="\d{10}" title="Enter a 10-digit phone number.">
+
+        <label for="passkey">Password:</label>
+        <input type="password" name="passkey" id="passkey" required>
+
+        <label for="address">Address:</label>
+        <textarea name="address" id="address" rows="3"></textarea>
+
+        <label for="usertype">User Type:</label>
+        <select name="usertype" id="usertype" required>
+            <option value="">-- Select User Type --</option>
+            <option value="Farmer">Farmer</option>
+            <option value="Customer">Customer</option>
+            <option value="DeliveryPerson">DeliveryPerson</option>
+        </select>
+
+        <button type="submit">Send OTP to Email</button>
+    </form>
+</div>
+{% endblock %}

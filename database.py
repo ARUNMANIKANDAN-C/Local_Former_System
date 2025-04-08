@@ -13,45 +13,39 @@ class FarmManagementDB:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
                 cursor.executescript('''
-                    CREATE TABLE IF NOT EXISTS Person (
-                        PersonID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        Name TEXT NOT NULL,
-                        Contact TEXT CHECK (length(Contact) BETWEEN 10 AND 15),
-                        Address TEXT,
-                        CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    );
 
                     CREATE TABLE IF NOT EXISTS User (
-                        UserID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        PhoneNumber TEXT UNIQUE,
-                        Password TEXT NOT NULL,
-                        PersonID INTEGER,
-                        CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (PersonID) REFERENCES Person(PersonID) ON DELETE SET NULL
-                    );
+                    EmailID TEXT PRIMARY KEY,
+                    Name TEXT NOT NULL,
+                    PhoneNumber INTEGER CHECK (length(PhoneNumber) = 10),
+                    Password TEXT NOT NULL,
+                    Address TEXT,
+                    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UserType TEXT NOT NULL CHECK (UserType IN ('Farmer', 'Customer', 'DeliveryPerson'))
+                );
 
                     CREATE TABLE IF NOT EXISTS Farmer (
                         FarmerID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        PersonID INTEGER NOT NULL,
+                        UserID TEXT NOT NULL,
                         AadharNumber TEXT UNIQUE NOT NULL CHECK (length(AadharNumber) = 12),
-                        FOREIGN KEY (PersonID) REFERENCES Person(PersonID) ON DELETE CASCADE
+                        FOREIGN KEY (UserID) REFERENCES User(EmailID) ON DELETE CASCADE
                     );
 
                     CREATE TABLE IF NOT EXISTS Customer (
                         CustomerID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        PersonID INTEGER NOT NULL,
-                        FOREIGN KEY (PersonID) REFERENCES Person(PersonID) ON DELETE CASCADE
+                        UserID TEXT NOT NULL,
+                        FOREIGN KEY (UserID) REFERENCES User(EmailID) ON DELETE CASCADE
                     );
                     
                     CREATE TABLE IF NOT EXISTS DeliveryPerson (
                         DeliveryPersonID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        PersonID INTEGER NOT NULL,
+                        UserID TEXT NOT NULL,
                         LicenseNumber TEXT UNIQUE NOT NULL,
                         VehicleType TEXT NOT NULL,
                         VehicleNumber TEXT UNIQUE NOT NULL,
                         AvailabilityStatus TEXT DEFAULT 'Available',
                         CurrentLocation TEXT,
-                        FOREIGN KEY (PersonID) REFERENCES Person(PersonID) ON DELETE CASCADE
+                        FOREIGN KEY (UserID) REFERENCES User(EmailID) ON DELETE CASCADE
                     );
 
                     CREATE TABLE IF NOT EXISTS Crop (
@@ -149,47 +143,49 @@ class FarmManagementDB:
             print(f"[create_tables] Error: {e}")
 
     # ---------- INSERT METHODS ----------
-    def insert_person(self, name, contact, address):
+    def insert_user(self, name, email_id, phone_number, password, address, user_type):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
-                cursor.execute("INSERT INTO Person (Name, Contact, Address) VALUES (?, ?, ?)",
-                               (name, contact, address))
-                return cursor.lastrowid
+                cursor.execute("""
+                    INSERT INTO User (Name, EmailID, PhoneNumber, Password, Address, UserType) 
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (name, email_id, phone_number, password, address, user_type))
+                return email_id  # Return the primary key
         except sqlite3.Error as e:
-            print(f"[insert_person] Error: {e}")
+            print(f"[insert_user] Error: {e}")
             return None
 
-    def insert_farmer(self, person_id, aadhar):
+    def insert_farmer(self, user_id, aadhar):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
-                cursor.execute("INSERT INTO Farmer (PersonID, AadharNumber) VALUES (?, ?)",
-                               (person_id, aadhar))
+                cursor.execute("INSERT INTO Farmer (UserID, AadharNumber) VALUES (?, ?)",
+                               (user_id, aadhar))
                 return cursor.lastrowid
         except sqlite3.Error as e:
             print(f"[insert_farmer] Error: {e}")
             return None
 
-    def insert_customer(self, person_id):
+    def insert_customer(self, user_id):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
-                cursor.execute("INSERT INTO Customer (PersonID) VALUES (?)", (person_id,))
+                cursor.execute("INSERT INTO Customer (UserID) VALUES (?)", (user_id,))
                 return cursor.lastrowid
         except sqlite3.Error as e:
             print(f"[insert_customer] Error: {e}")
             return None
             
-    def insert_delivery_person(self, person_id, license_number, vehicle_type, vehicle_number, current_location=None):
+    def insert_delivery_person(self, user_id, license_number, vehicle_type, vehicle_number, current_location=None):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     INSERT INTO DeliveryPerson 
-                    (PersonID, LicenseNumber, VehicleType, VehicleNumber, CurrentLocation) 
+                    (UserID, LicenseNumber, VehicleType, VehicleNumber, CurrentLocation) 
                     VALUES (?, ?, ?, ?, ?)
-                """, (person_id, license_number, vehicle_type, vehicle_number, current_location))
+                """, (user_id, license_number, vehicle_type, vehicle_number, current_location))
                 return cursor.lastrowid
         except sqlite3.Error as e:
             print(f"[insert_delivery_person] Error: {e}")
@@ -322,82 +318,23 @@ class FarmManagementDB:
         except sqlite3.Error as e:
             print(f"[insert_delivery_rating] Error: {e}")
             return None
-    
-    #----------- BULK INSERT METHODS ----------
-    def insert_many_persons(self, persons):
-        """
-        persons: List of tuples [(name, contact, address), ...]
-        """
-        try:
-            with self.connect_db() as conn:
-                cursor = conn.cursor()
-                cursor.executemany("INSERT INTO Person (Name, Contact, Address) VALUES (?, ?, ?)", persons)
-                return cursor.lastrowid
-        except sqlite3.Error as e:
-            print(f"[insert_many_persons] Error: {e}")
-            return None
-
-    def insert_many_farmers(self, farmers):
-        """
-        farmers: List of tuples [(person_id, aadhar), ...]
-        """
-        try:
-            with self.connect_db() as conn:
-                cursor = conn.cursor()
-                cursor.executemany("INSERT INTO Farmer (PersonID, AadharNumber) VALUES (?, ?)", farmers)
-                return cursor.lastrowid
-        except sqlite3.Error as e:
-            print(f"[insert_many_farmers] Error: {e}")
-            return None
-            
-    def insert_many_delivery_persons(self, delivery_persons):
-        """
-        delivery_persons: List of tuples [(person_id, license_number, vehicle_type, vehicle_number, current_location), ...]
-        """
-        try:
-            with self.connect_db() as conn:
-                cursor = conn.cursor()
-                cursor.executemany("""
-                    INSERT INTO DeliveryPerson 
-                    (PersonID, LicenseNumber, VehicleType, VehicleNumber, CurrentLocation) 
-                    VALUES (?, ?, ?, ?, ?)
-                """, delivery_persons)
-                return cursor.lastrowid
-        except sqlite3.Error as e:
-            print(f"[insert_many_delivery_persons] Error: {e}")
-            return None
-
-    def insert_many_crops(self, crops):
-        """
-        crops: List of tuples [(name, price, farmer_id, quantity_available, unit), ...]
-        """
-        try:
-            with self.connect_db() as conn:
-                cursor = conn.cursor()
-                cursor.executemany("""
-                    INSERT INTO Crop 
-                    (Name, Price, FarmerID, QuantityAvailable, Unit) 
-                    VALUES (?, ?, ?, ?, ?)
-                """, crops)
-                return cursor.lastrowid
-        except sqlite3.Error as e:
-            print(f"[insert_many_crops] Error: {e}")
-            return None
 
     # ---------- UPDATE METHODS ----------
-    def update_person(self, person_id, name=None, contact=None, address=None):
+    def update_user(self, email_id, name=None, phone_number=None, password=None, address=None):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
                 if name:
-                    cursor.execute("UPDATE Person SET Name = ? WHERE PersonID = ?", (name, person_id))
-                if contact:
-                    cursor.execute("UPDATE Person SET Contact = ? WHERE PersonID = ?", (contact, person_id))
+                    cursor.execute("UPDATE User SET Name = ? WHERE EmailID = ?", (name, email_id))
+                if phone_number:
+                    cursor.execute("UPDATE User SET PhoneNumber = ? WHERE EmailID = ?", (phone_number, email_id))
+                if password:
+                    cursor.execute("UPDATE User SET Password = ? WHERE EmailID = ?", (password, email_id))
                 if address:
-                    cursor.execute("UPDATE Person SET Address = ? WHERE PersonID = ?", (address, person_id))
+                    cursor.execute("UPDATE User SET Address = ? WHERE EmailID = ?", (address, email_id))
                 return cursor.rowcount
         except sqlite3.Error as e:  
-            print(f"[update_person] Error: {e}")
+            print(f"[update_user] Error: {e}")
             return None
     
     def update_crop(self, crop_id, name=None, price=None, quantity_available=None, unit=None):
@@ -490,19 +427,6 @@ class FarmManagementDB:
             print(f"[update_feedback] Error: {e}")
             return None
     
-    def update_user(self, user_id, phone_number=None, password=None):
-        try:
-            with self.connect_db() as conn:
-                cursor = conn.cursor()
-                if phone_number:
-                    cursor.execute("UPDATE User SET PhoneNumber = ? WHERE UserID = ?", (phone_number, user_id))
-                if password:
-                    cursor.execute("UPDATE User SET Password = ? WHERE UserID = ?", (password, user_id))
-                return cursor.rowcount
-        except sqlite3.Error as e:
-            print(f"[update_user] Error: {e}")
-            return None
-    
     def assign_delivery_person(self, delivery_id, delivery_person_id, estimated_delivery_time=None):
         try:
             with self.connect_db() as conn:
@@ -532,12 +456,12 @@ class FarmManagementDB:
                 if delivery:
                     delivery_person = self.get_delivery_person(delivery_person_id)
                     if delivery_person:
-                        person = self.get_person(delivery_person[1])  # PersonID in DeliveryPerson
-                        if person:
+                        user = self.get_user_by_email(delivery_person[1])  # UserID in DeliveryPerson
+                        if user:
                             self.insert_delivery_history(
                                 delivery_id, 
-                                f"Assigned to {person[1]}",  # Person Name
-                                delivery_person[5],  # CurrentLocation
+                                f"Assigned to {user[1]}",  # User Name
+                                delivery_person[6],  # CurrentLocation
                                 f"Delivery person assigned with vehicle {delivery_person[3]} {delivery_person[4]}"
                             )
                 
@@ -547,14 +471,14 @@ class FarmManagementDB:
             return None
 
     # ---------- DELETE METHODS ----------
-    def delete_person(self, person_id):
+    def delete_user(self, email_id):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM Person WHERE PersonID = ?", (person_id,))
+                cursor.execute("DELETE FROM User WHERE EmailID = ?", (email_id,))
                 return cursor.rowcount
         except sqlite3.Error as e:
-            print(f"[delete_person] Error: {e}")
+            print(f"[delete_user] Error: {e}")
             return None
             
     def delete_delivery_person(self, delivery_person_id):
@@ -568,21 +492,66 @@ class FarmManagementDB:
             return None
 
     # ---------- SELECT METHODS ----------
-    def get_person(self, person_id):
+    def get_user_by_email(self, email_id):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
-                cursor.execute("SELECT * FROM Person WHERE PersonID = ?", (person_id,))
+                cursor.execute("SELECT * FROM User WHERE EmailID = ?", (email_id,))
                 return cursor.fetchone()
         except sqlite3.Error as e:
-            print(f"[get_person] Error: {e}")
+            print(f"[get_user_by_email] Error: {e}")
+            return None
+            
+    def get_user_by_phone(self, phone_number):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM User WHERE PhoneNumber = ?", (phone_number,))
+                return cursor.fetchone()
+        except sqlite3.Error as e:
+            print(f"[get_user_by_phone] Error: {e}")
+            return None
+            
+    def get_farmer(self, farmer_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT f.*, u.Name, u.EmailID, u.Address 
+                    FROM Farmer f
+                    JOIN User u ON f.UserID = u.EmailID
+                    WHERE f.FarmerID = ?
+                """, (farmer_id,))
+                return cursor.fetchone()
+        except sqlite3.Error as e:
+            print(f"[get_farmer] Error: {e}")
+            return None
+            
+    def get_customer(self, customer_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT c.*, u.Name, u.EmailID, u.Address 
+                    FROM Customer c
+                    JOIN User u ON c.UserID = u.EmailID
+                    WHERE c.CustomerID = ?
+                """, (customer_id,))
+                return cursor.fetchone()
+        except sqlite3.Error as e:
+            print(f"[get_customer] Error: {e}")
             return None
             
     def get_delivery_person(self, delivery_person_id):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
-                cursor.execute("SELECT * FROM DeliveryPerson WHERE DeliveryPersonID = ?", (delivery_person_id,))
+                cursor.execute("""
+                    SELECT dp.*, u.Name, u.EmailID, u.Address 
+                    FROM DeliveryPerson dp
+                    JOIN User u ON dp.UserID = u.EmailID
+                    WHERE dp.DeliveryPersonID = ?
+                """, (delivery_person_id,))
                 return cursor.fetchone()
         except sqlite3.Error as e:
             print(f"[get_delivery_person] Error: {e}")
@@ -596,9 +565,9 @@ class FarmManagementDB:
                     # If location is provided, try to find delivery persons near that location
                     # This is simplified and would need actual geo-location calculation in a real app
                     cursor.execute("""
-                        SELECT dp.*, p.Name, p.Contact 
+                        SELECT dp.*, u.Name, u.EmailID, u.Address 
                         FROM DeliveryPerson dp
-                        JOIN Person p ON dp.PersonID = p.PersonID
+                        JOIN User u ON dp.UserID = u.EmailID
                         WHERE dp.AvailabilityStatus = 'Available'
                         ORDER BY 
                             CASE 
@@ -608,9 +577,9 @@ class FarmManagementDB:
                     """, (location,))
                 else:
                     cursor.execute("""
-                        SELECT dp.*, p.Name, p.Contact 
+                        SELECT dp.*, u.Name, u.EmailID, u.Address 
                         FROM DeliveryPerson dp
-                        JOIN Person p ON dp.PersonID = p.PersonID
+                        JOIN User u ON dp.UserID = u.EmailID
                         WHERE dp.AvailabilityStatus = 'Available'
                     """)
                 return cursor.fetchall()
@@ -683,11 +652,11 @@ class FarmManagementDB:
                 cursor.execute("""
                     SELECT o.*, d.DeliveryID, d.Status as DeliveryStatus, d.DeliveryPersonID,
                            dp.VehicleType, dp.VehicleNumber,
-                           p.Name as DeliveryPersonName, p.Contact as DeliveryPersonContact
+                           u.Name as DeliveryPersonName, u.EmailID as DeliveryPersonEmail
                     FROM Orders o
                     LEFT JOIN Delivery d ON o.OrderID = d.OrderID
                     LEFT JOIN DeliveryPerson dp ON d.DeliveryPersonID = dp.DeliveryPersonID
-                    LEFT JOIN Person p ON dp.PersonID = p.PersonID
+                    LEFT JOIN User u ON dp.UserID = u.EmailID
                     WHERE o.OrderID = ?
                 """, (order_id,))
                 return cursor.fetchone()
@@ -698,38 +667,6 @@ class FarmManagementDB:
 # Run this section only when executing directly
 if __name__ == "__main__":
     db = FarmManagementDB()
+    db.create_tables()
     print("Database and tables created successfully.")
-
-    # --- Insert Persons (Farmers) ---
-    farmer_persons = [
-        ("Ravi Kumar", "9990001111", "Village A"),
-        ("Meena Singh", "8881112222", "Village B"),
-        ("Arun Yadav", "7772223333", "Village C")
-    ]
-    db.insert_many_persons(farmer_persons)
-
-    # Assuming IDs are 1, 2, 3 (auto-incremented)
-    farmer_list = [
-        (1, "123456789012"),
-        (2, "234567890123"),
-        (3, "345678901234")
-    ]
-    db.insert_many_farmers(farmer_list)
-
-    # --- Insert Crops ---
-    crop_list = [
-        ("Wheat", 25.0, 1, 100, "kg"),
-        ("Rice", 30.5, 1, 150, "kg"),
-        ("Tomato", 15.0, 2, 50, "kg"),
-        ("Onion", 12.0, 2, 75, "kg"),
-        ("Potato", 18.0, 3, 120, "kg"),
-        ("Carrot", 20.0, 3, 60, "kg")
-    ]
-    db.insert_many_crops(crop_list)
-
-    # --- Insert Persons (Customers) ---
-    customer_persons = [
-        ("Anjali Verma", "9998887777", "City X"),
-        ("Rohan Das", "9998886666", "City Y"),
-    ]
-    db.insert_many_persons(customer_persons)
+    # Example usage
