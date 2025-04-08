@@ -128,20 +128,16 @@
   <!-- Charts in Grid -->
   <div class="charts-grid">
     <div class="chart-card">
-      <h3>Sales Overview</h3>
-      <canvas id="salesChart"></canvas>
+      <h3>Customer Types</h3>
+      <canvas id="customerTypeChart"></canvas>
     </div>
     <div class="chart-card">
       <h3>Product-wise Sales</h3>
       <canvas id="productSalesChart"></canvas>
     </div>
     <div class="chart-card">
-      <h3>Customer Types</h3>
-      <canvas id="customerTypeChart"></canvas>
-    </div>
-    <div class="chart-card">
-      <h3>Marketing Campaign Performance</h3>
-      <canvas id="campaignChart"></canvas>
+      <h3>Sales Overview</h3>
+      <canvas id="salesChart"></canvas>
     </div>
   </div>
 
@@ -250,28 +246,5 @@
     options: { responsive: true }
   });
 
-  const campaignChartCtx = document.getElementById('campaignChart').getContext('2d');
-  new Chart(campaignChartCtx, {
-    type: 'bar',
-    data: {
-      labels: {{ campaign_names|tojson }},
-      datasets: [{
-        label: 'Conversion Rate (%)',
-        data: {{ campaign_data|tojson }},
-        backgroundColor: 'rgba(255, 206, 86, 0.6)',
-        borderColor: 'rgba(255, 206, 86, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,
-          max: 100
-        }
-      }
-    }
-  });
 </script>
 {% endblock %}
