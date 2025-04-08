@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}New Farmer Aadhar{% endblock %}
+
+{% block content %}
+<div class="login">
+    <form class="form" method="POST" action="/submit_aadhar">
+        <label for="farmer_name">Farmer Name:</label>
+        <input type="text" name="farmer_name" id="farmer_name" placeholder="Your Full Name" required>
+
+        <label for="village">Village Name:</label>
+        <input type="text" name="village" id="village" placeholder="Your Village Name" required>
+
+        <label for="aadhar_number">Aadhar Card Number:</label>
+        <input type="text" name="aadhar_number" id="aadhar_number" placeholder="123412341234" required pattern="\d{12}" maxlength="12" autocomplete="off">
+
+        <input type="submit" value="Submit">
+
+        <p>Already registered?</p>
+        <button type="button" onclick="window.location.href='/login'">Go to Login</button>
+    </form>
+</div>
+{% endblock %}
+

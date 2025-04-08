@@ -1,109 +1,239 @@
 {% extends 'base.html' %}
 
 {% block title %}Home{% endblock %}
-{% block style %} 
-.waper {
-    width: 90%;
-    height: 100%;
-    background-color:rgb(255, 255, 255);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px #ccc;
+
+{% block style %}
+<style>
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
 }
+
+.wrapper {
+  width: 90%;
+  margin: 40px auto;
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 15px #333;
+  display: none;
+}
+
 .button-container {
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  gap: 15px;
 }
+
+.home-button {
+  background-color: #27ae60;
+  color: #fff;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+.home-button:hover {
+  background-color: #219150;
+}
+
 h1 {
   text-align: center;
-  color: #2c3e50;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
 }
+
 h2 {
-  color: #27ae60;
+  color: #2ecc71;
   margin-bottom: 15px;
 }
-p {
-  color: #34495e;
+
+p, li {
+  color: #ccc;
   font-size: 18px;
   line-height: 1.6;
 }
+
 ul {
   list-style-type: none;
   padding: 0;
 }
+
 li {
   margin: 10px 0;
-  color: #34495e;
-  font-size: 18px;
   padding-left: 20px;
   position: relative;
 }
-li:before {
+
+li::before {
   content: "•";
-  color: #27ae60;
+  color: #2ecc71;
   position: absolute;
   left: 0;
 }
+
 section {
   margin: 25px 0;
   padding: 25px;
-  background-color: #fff;
+  background-color: #2c2c2c;
   border-radius: 15px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  border-left: 4px solid #27ae60;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  border-left: 4px solid #2ecc71;
   transition: transform 0.3s ease;
 }
 section:hover {
   transform: translateY(-5px);
 }
-{% endblock %} 
+
+/* Modal Styling */
+#termsModal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+#termsBox {
+  background-color: #1f1f1f;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  color: #eee;
+  box-shadow: 0 0 10px #444;
+  text-align: center;
+}
+
+#termsText {
+  max-height: 200px;
+  overflow-y: scroll;
+  text-align: left;
+  padding: 15px;
+  margin: 20px 0;
+  background-color: #2c2c2c;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+#agreeButton, #disagreeButton {
+  background-color: #27ae60;
+  border: none;
+  padding: 10px 25px;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px;
+}
+#disagreeButton {
+  background-color: #e74c3c;
+}
+#agreeButton:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+#agreeButton:hover:enabled {
+  background-color: #219150;
+}
+#disagreeButton:hover {
+  background-color: #c0392b;
+}
+</style>
+{% endblock %}
 
 {% block content %}
 
-<div class="waper">
-
-<h1>Welcome to Local Farmer Support</h1>
-<p>Empowering communities through sustainable agriculture and local food systems.</p>
-
-<div class="button-container">
-  <button class="home-button" onclick="window.location.href='/sign_in'">Register</button>
-  <button class="home-button" onclick="window.location.href='/login'">Login</button>
+<!-- Terms Modal -->
+<div id="termsModal">
+  <div id="termsBox">
+    <h2>Terms and Conditions</h2>
+    <div id="termsText">
+      <p><b>Welcome to Local Farmer Support. Please read these terms and conditions carefully before using our service.</b></p>
+      <br>
+      <p>By accessing or using the website, you agree to be bound by these terms. If you disagree with any part of the terms then you may not access the service.</p>
+      <p>We may revise these terms at any time without notice. Your continued use of the service will signify your acceptance of any adjustment to these terms.</p>
+      <p>Content and services provided are subject to availability and may be withdrawn or changed without notice.</p>
+      <p>We reserve the right to restrict or terminate your access to our services at our discretion without notice.</p>
+      <p>Thank you for supporting local farmers!</p>
+    </div>
+    <button id="agreeButton" disabled>I Agree</button>
+    <button id="disagreeButton">I Disagree</button>
+  </div>
 </div>
 
-<section>
-  <h2>Why Local Farmer Systems Matter</h2>
-  <p>
-    Local farmer systems ensure fresh, nutritious, and sustainable food for our communities. By reducing transportation distances,
-    they help cut down on carbon emissions and promote eco-friendly practices.
-  </p>
-  <p>
-    Supporting local farmers builds a strong local economy, fosters job creation, and preserves agricultural heritage. It also
-    strengthens the relationship between people and the food they consume.
-  </p>
-</section>
+<!-- Main Content -->
+<div class="wrapper" id="mainContent">
+  <h1>Welcome to Local Farmer Support</h1>
+  <p>Empowering communities through sustainable agriculture and local food systems.</p>
 
-<section>
-  <h2>User Benefits</h2>
-  <ul style="text-align: left;">
-    <li>Access to fresh and organic local produce</li>
-    <li>Support for your local community and farmers</li>
-    <li>Lower environmental impact from reduced transportation</li>
-    <li>Opportunities to learn about sustainable farming</li>
-    <li>Exclusive event invites and seasonal offers</li>
-    <li>Healthy lifestyle through farm-to-table experiences</li>
-  </ul>
-</section>
+  <div class="button-container">
+    <button class="home-button" onclick="window.location.href='/sign_in'">Register</button>
+    <button class="home-button" onclick="window.location.href='/login'">Login</button>
+  </div>
 
-<section>
-  <h2>Our Mission</h2>
-  <p>
-    Local Farmer Support is committed to connecting local farmers with customers who value fresh, organic, and sustainable produce.
-    We aim to create a transparent and fair marketplace that benefits both farmers and consumers.
-  </p>
-</section>
+  <section>
+    <h2>Why Local Farmer Systems Matter</h2>
+    <p>Local farmer systems ensure fresh, nutritious, and sustainable food for our communities. By reducing transportation distances,
+      they help cut down on carbon emissions and promote eco-friendly practices.</p>
+    <p>Supporting local farmers builds a strong local economy, fosters job creation, and preserves agricultural heritage.</p>
+  </section>
+
+  <section>
+    <h2>User Benefits</h2>
+    <ul>
+      <li>Access to fresh and organic local produce</li>
+      <li>Support for your local community and farmers</li>
+      <li>Lower environmental impact from reduced transportation</li>
+      <li>Opportunities to learn about sustainable farming</li>
+      <li>Exclusive event invites and seasonal offers</li>
+      <li>Healthy lifestyle through farm-to-table experiences</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Our Mission</h2>
+    <p>Local Farmer Support is committed to connecting local farmers with customers who value fresh, organic, and sustainable produce.
+      We aim to create a transparent and fair marketplace that benefits both farmers and consumers.</p>
+  </section>
+</div>
 {% endblock %}
 
 {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("termsModal");
+    const content = document.getElementById("mainContent");
+    const agreeBtn = document.getElementById("agreeButton");
+    const disagreeBtn = document.getElementById("disagreeButton");
+    const termsText = document.getElementById("termsText");
+
+    // Detect scroll to bottom of terms box
+    termsText.addEventListener('scroll', () => {
+      if (termsText.scrollTop + termsText.clientHeight >= termsText.scrollHeight - 10) {
+        agreeBtn.disabled = false;
+      }
+    });
+
+    // Agree to terms
+    agreeBtn.addEventListener("click", function () {
+      modal.style.display = "none";
+      content.style.display = "block";
+    });
+
+    // Disagree to terms
+    disagreeBtn.addEventListener("click", function () {
+      alert("You must agree to the terms and conditions to use this service.");
+      window.location.href = "https://www.google.com"; // or redirect to another page
+    });
+  });
+</script>
 {% endblock %}
