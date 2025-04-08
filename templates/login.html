@@ -5,8 +5,8 @@
 {% block content %}
 <div class="login">
     <form class="form" method="POST" action="/details">
-        <label for="phone">Phone Number:</label>
-        <input type="tel" name="phone" id="phone" placeholder="+1234567890" required pattern="\+?\d{10,15}" autocomplete="tel">
+        <label for="email">Email ID:</label>
+        <input type="email" name="email" id="email" placeholder="you@example.com" required>
         
         <label for="passkey">Enter your Password:</label>
         <input type="password" name="passkey" id="passkey" placeholder="Your Password" required autocomplete="new-password">

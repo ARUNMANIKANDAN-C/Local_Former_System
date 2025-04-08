@@ -48,7 +48,7 @@ def login():
 
     if request.method == 'POST':
         try:
-            phone = request.form.get('phone')
+            Email = request.form.get('email')
             password = request.form.get('passkey')
             (
                 EmailID,
@@ -58,9 +58,9 @@ def login():
                 Address,
                 CreatedAt,
                 UserType
-            ) = db.get_user_by_email(phone)
+            ) = db.get_user_by_email(EmailID)
 
-            if phone == PhoneNumber and password == Password:
+            if password == Password:
                 session['user'] = phone
                 flash('Login successful!', 'success')
                 return redirect(url_for('dashboard'))
@@ -189,10 +189,15 @@ def details():
 # Products
 # ------------------------
 products = [
-    {"name": "Tomatoes", "price": 50, "district": "Salem"},
-    {"name": "Wheat", "price": 30, "district": "Madurai"},
-    {"name": "Mangoes", "price": 80, "district": "Trichy"}
-]
+     {"id": 1, "name": "Product 1", "price": 100, "image": "1.jpg"},
+     {"id": 2, "name": "Product 2", "price": 200, "image": "2.jpg"},
+     {"id": 3, "name": "Product 3", "price": 300, "image": "3.jpg"},
+     {"id": 4, "name": "Product 4", "price": 400, "image": "4.jpg"},
+     {"id": 5, "name": "Product 5", "price": 500, "image": "5.jpg"},
+     {"id": 6, "name": "Product 6", "price": 600, "image": "6.jpg"},
+ {  "id": 7, "name": "Product 7", "price": 600, "image": "2.jpg"},
+    {"id": 8, "name": "Product 7", "price": 600, "image": "4.jpg"}]
+ 
 
 @app.route('/available_products', methods=['GET', 'POST'])
 def search_products():

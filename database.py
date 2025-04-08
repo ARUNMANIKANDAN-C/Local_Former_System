@@ -44,7 +44,6 @@ class FarmManagementDB:
                         VehicleType TEXT NOT NULL,
                         VehicleNumber TEXT UNIQUE NOT NULL,
                         AvailabilityStatus TEXT DEFAULT 'Available',
-                        CurrentLocation TEXT,
                         FOREIGN KEY (UserID) REFERENCES User(EmailID) ON DELETE CASCADE
                     );
 
