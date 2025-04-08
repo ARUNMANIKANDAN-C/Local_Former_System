@@ -31,7 +31,7 @@ input[type="file"] {
   border-radius: 6px;
   background: black;
   font-size: 14px;
-  color: wheat;
+  color: rgb(102, 255, 0);
   cursor: pointer;
   transition: border-color 0.3s, background 0.3s;
 }
@@ -75,8 +75,7 @@ input[type="file"]:hover::before {
 .form {
   display: flex;
   flex-direction: column;
-  max-width: 600px;
-  margin: 40px auto;
+  margin: 20px auto;
   padding: 20px;
   background: rgba(20, 20, 20, 0.9);
   border-radius: 12px;
@@ -87,7 +86,7 @@ input[type="file"]:hover::before {
 .form label {
   font-weight: bold;
   margin: 10px 0 5px;
-  color: wheat;
+  color: rgb(102, 255, 0);
 }
 
 /* Input and select styling */
@@ -98,7 +97,7 @@ input[type="file"]:hover::before {
   border: 1px solid greenyellow;
   border-radius: 6px;
   background-color: green;
-  color: wheat;
+  color: rgb(102, 255, 0);
   font-size: 16px;
   font-family: inherit;
   box-sizing: border-box;
@@ -108,7 +107,7 @@ input[type="file"]:hover::before {
 .form input[type="submit"] {
   margin-top: 15px;
   background: darkgreen;
-  color: wheat;
+  color: rgb(102, 255, 0);
   font-weight: bold;
   border: none;
   cursor: pointer;
@@ -133,7 +132,7 @@ input[type="file"] {
   border-radius: 6px;
   font-size: 16px;
   background-color: black;
-  color: wheat;
+  color: rgb(102, 255, 0);
   box-sizing: border-box;
 }
 
@@ -148,7 +147,7 @@ button:focus {
 /* Button styling */
 button {
   background-color: green;
-  color: wheat;
+  color: rgb(102, 255, 0);
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.3s, transform 0.2s;
@@ -159,4 +158,25 @@ button {
 button:hover {
   background-color: darkgreen;
   transform: scale(1.05);
+}
+
+form table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px auto;
+  background: rgba(20, 20, 20, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 0 10px green;
+  overflow: hidden;
+}
+
+form table td, form table th {
+  padding: 12px;
+  border: 1px solid #444;
+}
+
+/* Fix the hover color */
+form table tr:hover {
+  background-color: #56eb42;
+  cursor: pointer;
 }

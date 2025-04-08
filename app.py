@@ -3,17 +3,75 @@ from flask_wtf import FlaskForm
 from datetime import datetime, timedelta
 from database import FarmManagementDB
 import random
-import smtplib
 import os
 from functools import wraps
 from otp_sender import GmailSender
+from werkzeug.utils import secure_filename
+from PIL import Image
 
+"""
+📦 Class: FarmManagementDB
+    🔧 Function: __init__
+    🔧 Function: connect_db
+    🔧 Function: create_tables
+    🔧 Function: insert_user
+    🔧 Function: insert_farmer
+    🔧 Function: insert_customer
+    🔧 Function: insert_delivery_person
+    🔧 Function: insert_crop
+    🔧 Function: insert_order
+    🔧 Function: insert_order_detail
+    🔧 Function: insert_payment
+    🔧 Function: insert_delivery
+    🔧 Function: insert_delivery_history
+    🔧 Function: insert_feedback
+    🔧 Function: insert_delivery_rating
+    🔧 Function: update_user
+    🔧 Function: update_crop
+    🔧 Function: update_order_status
+    🔧 Function: update_payment_status
+    🔧 Function: update_delivery_status
+    🔧 Function: update_delivery_person_status
+    🔧 Function: update_feedback
+    🔧 Function: assign_delivery_person
+    🔧 Function: delete_user
+    🔧 Function: delete_delivery_person
+    🔧 Function: get_user_by_email
+    🔧 Function: get_user_by_phone
+    🔧 Function: get_farmer
+    🔧 Function: get_customer
+    🔧 Function: get_delivery_person
+    🔧 Function: get_available_delivery_persons
+    🔧 Function: get_delivery
+    🔧 Function: get_delivery_history
+    🔧 Function: get_delivery_person_statistics
+    🔧 Function: get_order_details_with_delivery
+"""
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'fallback-hardcoded-key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(weeks=1)
 
 db = FarmManagementDB()
 sender = GmailSender()
+
+# ------------------------
+# golobal variables
+# ------------------------
+@app.context_processor
+def inject_user_image():
+    user = session.get('user')
+    if user and user.get("email") == "amrita.team.b11@gmail.com":
+        image_exists = True
+        image_filename = 'images/arun.jpg'
+    elif user and user.get("email"):
+        safe_email = user.get("email").replace('@', '_at_').replace('.', '_dot_')  # Optional sanitization
+        filename = f"{safe_email}.jpg"
+        image_exists = True
+        image_filename = "uploads/"+filename
+    else:
+        image_exists = False
+        image_filename = 'images/logo.png'
+    return dict(image_exists=image_exists, image_filename=image_filename)
 
 # ------------------------
 # Login Required Decorator
@@ -26,6 +84,12 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
+
+# ------------------------
+# Helper
+# ------------------------
+def get_current_user():
+    return session.get('user')
 
 # ------------------------
 # Error Handlers
@@ -44,30 +108,32 @@ def internal_error(error):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
+        flash('Already logged in!', 'info')
         return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
         try:
-            Email = request.form.get('email')
+            email = request.form.get('email')
             password = request.form.get('passkey')
-            (
-                EmailID,
-                Name,
-                PhoneNumber,
-                Password,
-                Address,
-                CreatedAt,
-                UserType
-            ) = db.get_user_by_email(EmailID)
+            user = db.get_user_by_email(email)
 
-            if password == Password:
-                session['user'] = phone
-                flash('Login successful!', 'success')
-                return redirect(url_for('dashboard'))
+            if user:
+                (EmailID, Name, PhoneNumber, Password, Address, CreatedAt, UserType) = user
+                if password == Password:
+                    session.permanent = True
+                    session['user'] = {
+                        "email": EmailID,
+                        "name": Name,
+                        "usertype": UserType
+                    }
+                    flash('Login successful!', 'success')
+                    return redirect(url_for('dashboard'))
+                else:
+                    flash('Incorrect password.', 'danger')
             else:
-                flash('Incorrect phone or password.', 'danger')
+                flash('User not found.', 'danger')
         except Exception as e:
-            flash(f'Invalid phone or password. Error: {e}', 'danger')
+            flash(f'Login error: {e}', 'danger')
 
     return render_template('login.html')
 
@@ -87,7 +153,24 @@ def signup():
         password = request.form.get('passkey')
         address = request.form.get('address')
         usertype = request.form.get('usertype')
+        photo = request.files.get('photo')
 
+        if photo:
+            # Make sure the uploads folder exists
+            upload_folder = 'static/uploads'
+            os.makedirs(upload_folder, exist_ok=True)
+
+            # Use email as filename (replace special characters to make it safe)
+            safe_email = email.replace('@', '_at_').replace('.', '_dot_')  # Optional sanitization
+            filename = f"{safe_email}.jpg"
+
+            # Full save path
+            save_path = os.path.join(upload_folder, filename)
+
+            # Convert to JPG and save
+            image = Image.open(photo)
+            rgb_image = image.convert('RGB')
+            rgb_image.save(save_path, 'JPEG')
         otp = str(random.randint(1000, 9999))
         session['pending_user'] = {
             'name': name,
@@ -141,10 +224,6 @@ def verify_otp():
 
     return render_template('verify_otp.html')
 
-@app.route('/terms_and_conditions')
-def terms_and_conditions():
-    return render_template('terms_and_conditions.html')
-
 # ------------------------
 # Main Routes
 # ------------------------
@@ -189,41 +268,47 @@ def details():
 # Products
 # ------------------------
 products = [
-     {"id": 1, "name": "Product 1", "price": 100, "image": "1.jpg"},
-     {"id": 2, "name": "Product 2", "price": 200, "image": "2.jpg"},
-     {"id": 3, "name": "Product 3", "price": 300, "image": "3.jpg"},
-     {"id": 4, "name": "Product 4", "price": 400, "image": "4.jpg"},
-     {"id": 5, "name": "Product 5", "price": 500, "image": "5.jpg"},
-     {"id": 6, "name": "Product 6", "price": 600, "image": "6.jpg"},
- {  "id": 7, "name": "Product 7", "price": 600, "image": "2.jpg"},
-    {"id": 8, "name": "Product 7", "price": 600, "image": "4.jpg"}]
- 
+    {"id": 1, "name": "Product 1", "price": 100, "image": "1.jpg", "district": "A"},
+    {"id": 2, "name": "Product 2", "price": 200, "image": "2.jpg", "district": "B"},
+    {"id": 3, "name": "Product 3", "price": 300, "image": "3.jpg", "district": "A"},
+    {"id": 4, "name": "Product 4", "price": 400, "image": "4.jpg", "district": "C"},
+    {"id": 5, "name": "Product 5", "price": 500, "image": "5.jpg", "district": "B"},
+    {"id": 6, "name": "Product 6", "price": 600, "image": "6.jpg", "district": "A"},
+]
 
 @app.route('/available_products', methods=['GET', 'POST'])
 def search_products():
-    filtered_products = products
+    try:
+        crops = db.get_all_crops()
+        filtered_crops = [{
+            "id": crop[0],
+            "name": crop[1],
+            "price": crop[2],
+            "farmer_id": crop[3],
+            "quantity": crop[4],
+            "unit": crop[5]
+        } for crop in crops]
+    except Exception as e:
+        flash(f'Error fetching crops: {e}', 'danger')
+        filtered_crops = []
+
     if request.method == 'POST':
-        filters = {
-            'search': request.form.get('search', '').lower(),
-            'product': request.form.get('product', '').lower(),
-            'district': request.form.get('district', '').lower(),
-            'price': request.form.get('price', '')
-        }
-
+        search_term = request.form.get('search', '').lower()
+        product_filter = request.form.get('product', '').lower()
         try:
-            price = int(filters['price']) if filters['price'] else None
-            filtered_products = [
-                p for p in products
-                if (not filters['search'] or filters['search'] in p["name"].lower())
-                and (not filters['product'] or filters['product'] in p["name"].lower())
-                and (not filters['district'] or filters['district'] in p["district"].lower())
-                and (not price or p["price"] <= price)
-            ]
+            price = float(request.form.get('price', 0)) if request.form.get('price') else None
         except ValueError:
-            flash('Invalid price value!', 'danger')
+            price = None
+            flash('Invalid price value', 'danger')
 
-    return render_template('available_products.html', products=filtered_products)
+        filtered_crops = [
+            crop for crop in filtered_crops
+            if (not search_term or search_term in crop['name'].lower()) and
+               (not product_filter or product_filter in crop['name'].lower()) and
+               (not price or crop['price'] <= price)
+        ]
 
+    return render_template('available_products.html', products=filtered_crops)
 # ------------------------
 # Product Reviews
 # ------------------------
@@ -258,8 +343,9 @@ def add_product():
 @app.route("/dashboard")
 @login_required
 def dashboard():
+    user = get_current_user()
     return render_template("dashboard.html",
-        user={"name": "Alex"},
+        user=user,
         total_products=125,
         total_orders=342,
         monthly_sales=450000,
@@ -275,9 +361,64 @@ def dashboard():
         customer_type_data=[70, 30]
     )
 
-# ------------------------
-# URL Inspector (Debug)
-# ------------------------
+@app.route('/choose-delivery', methods=['POST'])
+def choose_delivery():
+    task_id = request.form.get('task_id')
+    flash(f"Delivery {task_id} has been assigned to you.", "success")
+    return redirect(url_for('delivery_dashboard'))
+
+@app.route('/delivery-dashboard')
+def delivery_dashboard():
+    delivery_man = {"name": "Arjun"}
+    return render_template("delivery_dashboard.html",
+        delivery_man=delivery_man,
+        total_deliveries=132,
+        pending_deliveries=7,
+        today_deliveries=12,
+        avg_delivery_time=28,
+        status_data=[113, 15, 4],
+        weekly_labels=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        weekly_data=[20, 18, 22, 25, 19, 15, 13],
+        recent_deliveries=[
+            {"id": "D1234", "customer": "Neha Sharma", "status": "Delivered", "time_taken": 30, "date": "2025-04-07"},
+            {"id": "D1235", "customer": "Rahul Verma", "status": "Delivered", "time_taken": 25, "date": "2025-04-07"},
+            {"id": "D1236", "customer": "Aarti Singh", "status": "Pending", "time_taken": "-", "date": "2025-04-08"},
+        ],
+        nearby_deliveries=[
+            {"id": "N1001", "pickup": "Sector 22", "drop": "Sector 27", "distance": "2.4 km"},
+            {"id": "N1002", "pickup": "MG Road", "drop": "Cyber Park", "distance": "1.1 km"},
+        ]
+    )
+
+@app.route("/dashboard1")
+@login_required
+def dashboard1():
+    user = get_current_user()
+
+    try:
+        # Use actual DB methods to fetch counts
+        total_users = db.count_all_users()  # Implement this in FarmManagementDB
+        total_farmers = db.count_users_by_type("farmer")
+        total_customers = db.count_users_by_type("customer")
+        total_delivery_persons = db.count_users_by_type("delivery")
+        total_products = db.count_all_crops()  # total crops in market
+        total_orders = db.count_all_orders()
+        total_feedback = db.count_all_feedbacks()
+
+        return render_template("dashboard.html",
+            user=user,
+            total_users=total_users,
+            total_farmers=total_farmers,
+            total_customers=total_customers,
+            total_delivery_persons=total_delivery_persons,
+            total_products=total_products,
+            total_orders=total_orders,
+            total_feedback=total_feedback
+        )
+    except Exception as e:
+        flash(f"Error loading dashboard: {e}", "danger")
+        return redirect(url_for("home"))
+
 @app.route('/urls')
 def all_urls():
     endpoints = []
@@ -289,9 +430,6 @@ def all_urls():
         })
     return render_template('urls.html', endpoints=endpoints)
 
-# ------------------------
-# Test Template (optional)
-# ------------------------
 @app.route("/test")
 def test():
     return render_template("test.html")

@@ -12,16 +12,6 @@ body {
   padding: 0;
 }
 
-.wrapper {
-  width: 90%;
-  margin: 40px auto;
-  background-color: #1e1e1e;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 0px 15px #333;
-  display: none;
-}
-
 .button-container {
   display: flex;
   justify-content: center;
@@ -63,19 +53,12 @@ p, li {
 ul {
   list-style-type: none;
   padding: 0;
+  margin: 0;
 }
 
 li {
   margin: 10px 0;
-  padding-left: 20px;
-  position: relative;
-}
-
-li::before {
-  content: "•";
-  color: #2ecc71;
-  position: absolute;
-  left: 0;
+  padding-left: 0;
 }
 
 section {
@@ -96,7 +79,7 @@ section:hover {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background-color: rgba(0,0,0,0.85);
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   z-index: 999;
@@ -111,6 +94,15 @@ section:hover {
   color: #eee;
   box-shadow: 0 0 10px #444;
   text-align: center;
+}
+
+.wrapper {
+  width: 90%;
+  margin: 40px auto;
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 15px #333;
 }
 
 #termsText {
@@ -176,7 +168,7 @@ section:hover {
   <p>Empowering communities through sustainable agriculture and local food systems.</p>
 
   <div class="button-container">
-    <button class="home-button" onclick="window.location.href='/sign_in'">Register</button>
+    <button class="home-button" id="registerButton">Register</button>
     <button class="home-button" onclick="window.location.href='/login'">Login</button>
   </div>
 
@@ -211,28 +203,41 @@ section:hover {
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("termsModal");
-    const content = document.getElementById("mainContent");
     const agreeBtn = document.getElementById("agreeButton");
     const disagreeBtn = document.getElementById("disagreeButton");
     const termsText = document.getElementById("termsText");
+    const registerBtn = document.getElementById("registerButton");
 
-    // Detect scroll to bottom of terms box
+    let shouldRedirectToRegister = false;
+
+    // Show modal only when "Register" is clicked
+    registerBtn.addEventListener("click", function () {
+      shouldRedirectToRegister = true;
+      modal.style.display = "flex";
+    });
+
+    // Enable agree button only after scrolling to bottom
     termsText.addEventListener('scroll', () => {
       if (termsText.scrollTop + termsText.clientHeight >= termsText.scrollHeight - 10) {
         agreeBtn.disabled = false;
       }
     });
 
-    // Agree to terms
+    // Agree button click
     agreeBtn.addEventListener("click", function () {
       modal.style.display = "none";
-      content.style.display = "block";
+      agreeBtn.disabled = true; // Reset for future use
+      termsText.scrollTop = 0;  // Reset scroll
+
+      if (shouldRedirectToRegister) {
+        window.location.href = "/signup";
+      }
     });
 
-    // Disagree to terms
+    // Disagree button click
     disagreeBtn.addEventListener("click", function () {
       alert("You must agree to the terms and conditions to use this service.");
-      window.location.href = "https://www.google.com"; // or redirect to another page
+      window.location.href = "https://www.google.com";
     });
   });
 </script>

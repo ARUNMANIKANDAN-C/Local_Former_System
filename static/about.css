@@ -1,38 +1,51 @@
 
-  .profile-info {
-    flex: 1;
-    background-color: green;
-    border-radius: 10px;
-    text-align: left;
-    padding: 15px;
-    font-size: 20px;
-  }
-  
 
-  .profile-img {
-    width: 120px; /* Dynamically sized */
-    height: 120px;
-    object-fit: cover;
-    align-items: center;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .content-about {
-    display:flex;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px black;
-    width: 90%;
-  }
+.profile {
+  width: 350px;
+  height: 350px;
+  border-radius: 12px;
+  margin: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8); /* semi-transparent black */
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 15px #00ff00a0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-  .profile {  
-    width: 350px;
-    height:350px;
-    border-radius: 10%;
-    margin: 10px;
-    padding: 20px;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: left;
-    background-color: whitesmoke;
-    border: 2px solid darkgreen;
-  }
+.profile:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px #00ff00cc;
+}
+
+.profile-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #00ff00;
+  margin-bottom: 15px;
+}
+
+.profile-info {
+  flex: 1;
+  background-color: rgba(0, 255, 0, 0.2); /* semi-transparent neon */
+  border-radius: 10px;
+  text-align: left;
+  padding: 15px;
+  font-size: 18px;
+  color: #00ff00;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: inset 0 0 10px #00ff0055;
+}
+
+.content-about {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  width: 90%;
+}

@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="login">
-    <form class="form" method="POST">
+    <form class="form" method="POST" enctype="multipart/form-data">
         <label for="name">Full Name:</label>
         <input type="text" name="name" id="name" placeholder="John Doe" required>
 
@@ -29,7 +29,14 @@
             <option value="DeliveryPerson">DeliveryPerson</option>
         </select>
 
+        <!-- New photo upload field -->
+        <label for="photo">Upload Your Photo:</label>
+        <input type="file" name="photo" id="photo" accept="image/*" required>
+
         <button type="submit">Send OTP to Email</button>
     </form>
+
+    <p>OTP will be sent to your email. If not found, check your junk or spam folder. Once you receive the OTP, click the button below:</p>
+    <button type="button" onclick="window.location.href='/verify_otp'">Verify OTP</button>
 </div>
 {% endblock %}

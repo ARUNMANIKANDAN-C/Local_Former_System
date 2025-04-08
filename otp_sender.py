@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 class GmailSender:
     def __init__(self):
         self.sender_email = "amrita.team.b11@gmail.com"
-        self.app_password = open("../app.txt").read()  # ← Insert your Gmail App Password
+        self.app_password = open("../app.txt").read()  or "add_your_key"# ← Insert your Gmail App Password
         self.smtp_server = "smtp.gmail.com"
         self.smtp_port = 587
 
@@ -30,7 +30,7 @@ class GmailSender:
 if __name__ == "__main__":
     sender = GmailSender()
     sender.send_email(
-        to_email="arunmanikandan5500@gmail.com",
+        to_email="temp@gmail.com",
         subject="Hello from Python Class",
         body="This email was sent using a Python class wrapper around smtplib!"
     )

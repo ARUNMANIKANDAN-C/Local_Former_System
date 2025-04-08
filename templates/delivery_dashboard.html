@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Delivery Dashboard{% endblock %}
+{% block content %}
+
+<div class="dashboard-container">
+  <h2 class="logo" style="margin:10px;">Welcome, {{ delivery_man.name }} 👋</h2>
+    
+<!-- Nearby Deliveries Section -->
+<div class="orders-section" >
+    <h3>Available Nearby Deliveries</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Delivery ID</th>
+          <th>Pickup</th>
+          <th>Drop</th>
+          <th>Distance</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in nearby_deliveries %}
+        <tr>
+          <td>{{ task.id }}</td>
+          <td>{{ task.pickup }}</td>
+          <td>{{ task.drop }}</td>
+          <td>{{ task.distance }}</td>
+          <td>
+            <form action="{{ url_for('choose_delivery') }}" method="post">
+              <input type="hidden" name="task_id" value="{{ task.id }}">
+              <button type="submit" class="btn btn-primary">Choose</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Total Deliveries</h3>
+      <p>{{ total_deliveries }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>Pending Deliveries</h3>
+      <p>{{ pending_deliveries }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>Delivered Today</h3>
+      <p>{{ today_deliveries }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>Avg Delivery Time</h3>
+      <p>{{ avg_delivery_time }} mins</p>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Delivery Status Breakdown</h3>
+      <canvas id="statusChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Deliveries This Week</h3>
+      <canvas id="weeklyChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Recent Deliveries Table -->
+  <div class="orders-section">
+    <h3>Recent Deliveries</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Delivery ID</th>
+          <th>Customer</th>
+          <th>Status</th>
+          <th>Time Taken</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for delivery in recent_deliveries %}
+        <tr>
+          <td>{{ delivery.id }}</td>
+          <td>{{ delivery.customer }}</td>
+          <td>{{ delivery.status }}</td>
+          <td>{{ delivery.time_taken }} mins</td>
+          <td>{{ delivery.date }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+  
+<!-- Chart JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const statusCtx = document.getElementById('statusChart').getContext('2d');
+  new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Delivered', 'Pending', 'Cancelled'],
+      datasets: [{
+        data: {{ status_data|tojson }},
+        backgroundColor: ['#4CAF50', '#FF9800', '#F44336']
+      }]
+    }
+  });
+
+  const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+  new Chart(weeklyCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ weekly_labels|tojson }},
+      datasets: [{
+        label: 'Deliveries',
+        data: {{ weekly_data|tojson }},
+        backgroundColor: 'rgba(0, 123, 255, 0.6)',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

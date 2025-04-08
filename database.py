@@ -663,6 +663,210 @@ class FarmManagementDB:
             print(f"[get_order_details_with_delivery] Error: {e}")
             return None
 
+    def count_all_users(self):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM User")
+                return cursor.fetchone()[0]
+        except sqlite3.Error as e:
+            print(f"[count_all_users] Error: {e}")
+            return None
+    
+    def count_users_by_type(self, user_type):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM User WHERE UserType = ?", (user_type,))
+                return cursor.fetchone()[0]
+        except sqlite3.Error as e:
+            print(f"[count_users_by_type] Error: {e}")
+            return None
+    
+    def count_all_crops(self):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM Crop")
+                return cursor.fetchone()[0]
+        except sqlite3.Error as e:
+            print(f"[count_all_crops] Error: {e}")
+            return None
+        
+    def count_all_orders(self):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM Orders")
+                return cursor.fetchone()[0]
+        except sqlite3.Error as e:
+            print(f"[count_all_orders] Error: {e}")
+            return None
+        
+    def count_all_feedbacks(self): 
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM Feedback")
+                return cursor.fetchone()[0]
+        except sqlite3.Error as e:
+            print(f"[count_all_feedbacks] Error: {e}")
+            return None
+    
+    def get_all_users(self):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM User")
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_all_users] Error: {e}")
+            return None
+    
+    def get_all_farmers(self):
+
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT f.*, u.Name, u.EmailID, u.Address 
+                    FROM Farmer f
+                    JOIN User u ON f.UserID = u.EmailID
+                """)
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_all_farmers] Error: {e}")
+            return None
+        
+    def get_all_customers(self):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT c.*, u.Name, u.EmailID, u.Address 
+                    FROM Customer c
+                    JOIN User u ON c.UserID = u.EmailID
+                """)
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_all_customers] Error: {e}")
+            return None
+    def get_products_userid(self, user_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT * FROM Crop WHERE FarmerID = ?
+                """, (user_id,))
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_products_userid] Error: {e}")
+            return None
+        
+    def get_all_orders_by_users(self, user_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT o.*, u.Name, u.EmailID, u.Address 
+                    FROM Orders o
+                    JOIN User u ON o.CustomerID = u.EmailID
+                    WHERE o.CustomerID = ?
+                """, (user_id,))
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_all_orders_by_users] Error: {e}")
+            return None
+    
+    def get_monthly_sales_by_user(self, user_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT strftime('%Y-%m', OrderDate) as Month, SUM(TotalAmount) as TotalSales
+                    FROM Orders
+                    WHERE CustomerID = ?
+                    GROUP BY Month
+                """, (user_id,))
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_monthly_sales_by_user] Error: {e}")
+            return None
+    
+    def get_mostamout_spend_by_coustmer_to_farmer(self, customer_id, former_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT SUM(TotalAmount) as TotalSpent
+                    FROM Orders o
+                    JOIN OrderDetails od ON o.OrderID = od.OrderID
+                    WHERE o.CustomerID = ? AND od.CropID IN (
+                        SELECT CropID FROM Crop WHERE FarmerID = ?
+                    )
+                """, (customer_id, former_id))
+                return cursor.fetchone()[0]
+        except sqlite3.Error as e:
+            print(f"[get_mostamout_spend_by_coustmer_to_farmer] Error: {e}")
+            return None
+        
+    def get_slaes_with_price_over_by_last_5_month_for_former(self, farmer_id, price):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT strftime('%Y-%m', OrderDate) as Month, SUM(TotalAmount) as TotalSales
+                    FROM Orders o
+                    JOIN OrderDetails od ON o.OrderID = od.OrderID
+                    WHERE od.CropID IN (
+                        SELECT CropID FROM Crop WHERE FarmerID = ? AND Price > ?
+                    )
+                    GROUP BY Month
+                    ORDER BY Month DESC
+                    LIMIT 5
+                """, (farmer_id, price))
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_slaes_with_price_over_by_last_5_month_for_former] Error: {e}")
+            return None
+        
+    def get_top_3_sales_products_with_price_by_farmer(self, farmer_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT c.Name, SUM(od.SubTotal) as TotalSales
+                    FROM Crop c
+                    JOIN OrderDetails od ON c.CropID = od.CropID
+                    JOIN Orders o ON od.OrderID = o.OrderID
+                    WHERE c.FarmerID = ?
+                    GROUP BY c.Name
+                    ORDER BY TotalSales DESC
+                    LIMIT 3
+                """, (farmer_id,))
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_top_3_sales_products_with_price_by_farmer] Error: {e}")
+            return None
+    
+    def get_count_new_coustmers_by_month_for_former(self, farmer_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT strftime('%Y-%m', OrderDate) as Month, COUNT(DISTINCT o.CustomerID) as NewCustomers
+                    FROM Orders o
+                    JOIN OrderDetails od ON o.OrderID = od.OrderID
+                    WHERE od.CropID IN (
+                        SELECT CropID FROM Crop WHERE FarmerID = ?
+                    )
+                    GROUP BY Month
+                """, (farmer_id,))
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_count_new_coustmers_by_month_for_former] Error: {e}")
+            return None
+
 # Run this section only when executing directly
 if __name__ == "__main__":
     db = FarmManagementDB()
