@@ -1,129 +1,162 @@
 /* File input styling */
-input[type="file"] {
-    display: block;
-    width: 90%;
-    margin: 10px auto;
-    padding: 10px;
-    border: 2px dashed #00cccc;
-    border-radius: 6px;
-    background: #fdfdfd;
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-    transition: border-color 0.3s, background 0.3s;
-  }
-  
-  /* File input hover and focus effects */
-  input[type="file"]:hover {
-    border-color: #009999;
-    background: #f0ffff;
-  }
-  
-  input[type="file"]:focus {
-    outline: none;
-    border-color: #006666;
-    background: #e6ffff;
-  }
-  
-  /* Custom button for file input */
-  input[type="file"]::-webkit-file-upload-button {
-    visibility: hidden;
-  }
-  
-  input[type="file"]::before {
-    content: 'Choose Files';
-    display: inline-block;
-    background: #00cccc;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    margin-right: 10px;
-  }
-  
-  /* Hover effect for the custom button */
-  input[type="file"]:hover::before {
-    background: #009999;
-    border: 2px solid #00ffff;
-  }
-  
-  /* General form styling */
-  .form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  /* Label styling */
-  .form label {
-    font-weight: bold;
-    margin: 10px 0 5px;
-    text-align: left;
-  }
-  
-  /* Input and select styling */
-  .form input,
-  .form select {
-    padding: 10px;
-    width: 100%;
-    border: 1px solid #0eeaf6;
-    border-radius: 5px;
-    outline: none;
-    font-size: 16px;
-    font-family: sans-serif;
-    box-sizing: border-box;
-    background-color: #f9f9f9;
-  }
-  
-  /* Submit button styling */
-  .form input[type="submit"] {
-    margin-top: 15px;
-    background: #007bff;
-    color: white;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  
-  .form input[type="submit"]:hover {
-    background: #0056b3;
-  }
-  
-  /* General input, select, and button styling */
-  input[type="text"],
-  select,
-  button,
-  input[type="file"] {
-    width: 90%;
-    padding: 10px;
-    margin: 10px auto;
-    display: block;
-    border: 2px solid #00cccc;
-    border-radius: 6px;
-    font-size: 16px;
-    font-family: sans-serif;
-    box-sizing: border-box;
-    background-color: #f9f9f9;
-  }
-  
-  /* Focus effect for all form elements */
-  input:focus,
-  select:focus,
-  button:focus {
-    outline: none;
-    border-color: #006666;
-  }
+/* Global styling for dark theme */
+body {
+  background: url('img.jpg') no-repeat center center fixed;
 
-  /* Button styling */
+  color: black;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Overlay to darken background image slightly for better readability */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: -1;
+}
+
+/* File input styling */
+input[type="file"] {
+  display: block;
+  width: 90%;
+  margin: 10px auto;
+  padding: 10px;
+  border: 2px dashed green;
+  border-radius: 6px;
+  background: black;
+  font-size: 14px;
+  color: wheat;
+  cursor: pointer;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+/* File input hover and focus effects */
+input[type="file"]:hover {
+  border-color: greenyellow;
+  background: black;
+}
+
+input[type="file"]:focus {
+  outline: none;
+  border-color: green;
+  background: gray;
+}
+
+/* Custom button for file input */
+input[type="file"]::-webkit-file-upload-button {
+  visibility: hidden;
+}
+
+input[type="file"]::before {
+  content: 'Choose Files';
+  display: inline-block;
+  background: greenyellow;
+  color: black;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+/* Hover effect for the custom button */
+input[type="file"]:hover::before {
+  background: greenyellow;
+  border: 2px solid green;
+}
+
+/* General form styling */
+.form {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  background: rgba(20, 20, 20, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 0 10px green;
+}
+
+/* Label styling */
+.form label {
+  font-weight: bold;
+  margin: 10px 0 5px;
+  color: wheat;
+}
+
+/* Input and select styling */
+.form input,
+.form select {
+  padding: 10px;
+  width: 100%;
+  border: 1px solid greenyellow;
+  border-radius: 6px;
+  background-color: green;
+  color: wheat;
+  font-size: 16px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+/* Submit button styling */
+.form input[type="submit"] {
+  margin-top: 15px;
+  background: darkgreen;
+  color: wheat;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.3s ease;
+}
+
+.form input[type="submit"]:hover {
+  background: greenyellow;
+}
+
+/* General input, select, and button styling */
+input[type="text"],
+select,
+button,
+input[type="file"] {
+  width: 90%;
+  padding: 10px;
+  margin: 10px auto;
+  display: block;
+  border: 2px solid darkolivegreen;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: black;
+  color: wheat;
+  box-sizing: border-box;
+}
+
+/* Focus effect for all form elements */
+input:focus,
+select:focus,
+button:focus {
+  outline: none;
+  border-color: greenyellow;
+}
+
+/* Button styling */
 button {
-    background-color: #001eff;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: #4f03ff;
-  }
+  background-color: green;
+  color: wheat;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.2s;
+  border: none;
+  border-radius: 6px;
+}
+
+button:hover {
+  background-color: darkgreen;
+  transform: scale(1.05);
+}

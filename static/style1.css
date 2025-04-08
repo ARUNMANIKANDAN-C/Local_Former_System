@@ -1,91 +1,98 @@
-
 /* Menu Button */
 .menu-button {
-    position: relative;
-    color: #fff;
-    background-color: #0616ff;
-    border: none;
-    font-size: 18px;
-    padding: 12px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-  }
-  
-  /* Hover & Active States */
-  .menu-button:hover {
-    background-color: #0e0bed;
-  }
-  
-  .menu-button:active {
-    transform: scale(0.95);
-  }
-  
-  /* Side Panel (Initially Hidden) */
-  .side-panel {
-    position: fixed;
-    left: -260px; /* Hide panel */
-    height: 100%;
-    top: 0;
-    width: 250px;
-    background-color: #f8f9fa;
-    padding: 20px;
-    align-content: center;
-    border-right: 3px solid #bbb;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-    z-index: 99;
-  }
-  .product_list {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    transition: transform 0.3s ease-in-out;
-  }
-  
-  
-  .side-panel.active {
-    transform: translateX(260px);
-  }
-  
-  .side-panel h2 {
-    text-align: center;
-    color: #222;
-    font-size: 22px;
-    font-weight: bold;
-    margin-bottom: 15px;
-  }
-  
-  /* Form Inputs & Buttons */
-  .side-panel form input,
-  .side-panel form button {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 12px;
-    border: 1px solid #0e0bed;
-    border-radius: 5px;
-    font-size: 16px;
-  }
-  
-  /* Button Styling */
-  .side-panel form button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-  
-  /* Hover Effects */
-  .side-panel form button:hover {
-    background-color: #0056b3;
-  }
-  
-  .side-panel form button:active {
-    transform: scale(0.95);
-  }
-  
-    /* Close Button */    
+  position: relative;
+  color: white;
+  background-color: forestgreen; /* Green base */
+  border: none;
+  font-size: 18px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 10px rgba(34, 139, 34, 0.4); /* Soft green glow */
+}
+
+.menu-button:hover {
+  background-color: seagreen; /* Darker green on hover */
+}
+
+.menu-button:active {
+  transform: scale(0.95);
+}
+
+/* Side Panel (Dark Mode) */
+.side-panel {
+  position: fixed;
+  left: -260px;
+  height: 100%;
+  top: 0;
+  width: 250px;
+  background-color: midnightblue; /* Dark base */
+  padding: 20px;
+  align-content: center;
+  border-right: 3px solid darkslategray;
+  box-shadow: 2px 0 20px rgba(0, 255, 0, 0.1);
+  transition: transform 0.3s ease;
+  z-index: 99;
+}
+
+.side-panel.active {
+  transform: translateX(260px);
+}
+
+.side-panel h2 {
+  text-align: center;
+  color: honeydew; /* Soft pale green text */
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+/* Product List */
+.product_list {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Form Inputs & Buttons */
+.side-panel form input,
+.side-panel form button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid mediumseagreen;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: darkslategray;
+  color: lightgreen;
+}
+
+.side-panel form input::placeholder {
+  color: lightgray;
+}
+
+/* Button Styling */
+.side-panel form button {
+  background-color: forestgreen;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 8px rgba(34, 139, 34, 0.3);
+}
+
+/* Hover Effects */
+.side-panel form button:hover {
+  background-color: seagreen;
+}
+
+.side-panel form button:active {
+  transform: scale(0.95);
+}
+
+ 

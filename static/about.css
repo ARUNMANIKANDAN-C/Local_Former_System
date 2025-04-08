@@ -1,7 +1,7 @@
 
   .profile-info {
     flex: 1;
-    background-color: #00ffe5;
+    background-color: green;
     border-radius: 10px;
     text-align: left;
     padding: 15px;
@@ -20,7 +20,7 @@
   .content-about {
     display:flex;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px black;
     width: 90%;
   }
 
@@ -33,6 +33,6 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: left;
-    background-color: #f0fcfc;
-    border: 2px solid #0c00f6;
+    background-color: whitesmoke;
+    border: 2px solid darkgreen;
   }
