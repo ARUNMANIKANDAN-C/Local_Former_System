@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
 
 {% block title %}Login{% endblock %}
+{% block style%}
 
+.form{grid-template-columns: repeat(1, 1fr);}
+{%endblock%}
 {% block content %}
+
 <div class="login">
     <h2>Login<h2>
     <form class="form" method="POST">

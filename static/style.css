@@ -128,6 +128,24 @@ nav ul li a:hover {
   margin: 20px;
 }
 
+/* Animated Button Styling */
+.button-85 {
+  padding: 16px 36px;
+  color: greenyellow;
+  background: #1a1a1a;
+  border-radius: 12px;
+  border: 2px solid limegreen;
+  margin: 12px;
+  font-weight: bold;
+  box-shadow: 0 0 10px green;
+  transition: 0.3s ease;
+}
+
+.button-85:hover {
+  background: limegreen;
+  color: black;
+  box-shadow: 0 0 20px greenyellow;
+}
 
 .wrapper{
   background-color: #1c1c1c;

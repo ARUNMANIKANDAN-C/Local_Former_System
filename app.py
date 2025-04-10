@@ -27,10 +27,12 @@ def inject_user_image():
         filename = f"{safe_email}.jpg"
         image_exists = True
         image_filename = "uploads/"+filename
+        userexist=True
     else:
         image_exists = False
         image_filename = 'images/logo.png'
-    return dict(image_exists=image_exists, image_filename=image_filename)
+        userexist=False
+    return dict(image_exists=image_exists, image_filename=image_filename,userexist=userexist)
 
 # ------------------------
 # Login Required Decorator
@@ -61,6 +63,7 @@ def not_found_error(error):
 def internal_error(error):
     return render_template('500.html'), 500
 
+
 # ------------------------
 # Authentication
 # ------------------------
@@ -73,20 +76,42 @@ def login():
     if request.method == 'POST':
         try:
             email = request.form.get('email')
+            print(email+"/")
             password = request.form.get('passkey')
             user = db.get_user_by_email(email)
-
+            print(user)
             if user:
                 (EmailID, Name, PhoneNumber, Password, Address, CreatedAt, UserType) = user
                 if password == Password:
-                    session.permanent = True
-                    session['user'] = {
+                    flash('Login successful!', 'success')
+                    if UserType=="Farmer":
+                        session.permanent = True
+                        session['user'] = {
                         "email": EmailID,
                         "name": Name,
-                        "usertype": UserType
-                    }
-                    flash('Login successful!', 'success')
-                    return redirect(url_for('dashboard'))
+                        "usertype": UserType,
+                        "status": "active"
+                            }
+                        return redirect(url_for('Farmer_Signup'))
+                    elif UserType=="DeliveryPerson":
+                        session['user'] = {
+                        "email": EmailID,
+                        "name": Name,
+                        "usertype": UserType,
+                        "status": "active"
+                            }
+                        return redirect(url_for('Delivery_Person'))
+                    elif UserType=="Customer":
+                        session['user'] = {
+                        "email": EmailID,
+                        "name": Name,
+                        "usertype": UserType,
+                        "status": "active"
+                            }
+                        return redirect(url_for('login'))
+                    else:
+                        flash('Invalid user type.', 'danger')
+                        return redirect(url_for('signup'))
                 else:
                     flash('Incorrect password.', 'danger')
             else:
@@ -164,6 +189,8 @@ def verify_otp():
         if user_input_otp == real_otp:
             try:
                 user = session['pending_user']
+                print(user)
+                type=user['usertype']
                 db.insert_user(
                     user['name'],
                     user['email'],
@@ -183,39 +210,67 @@ def verify_otp():
 
     return render_template('verify_otp.html')
 
-@app.route('/Former_Signup', methods=['GET', 'POST'])
-def Former_Signup():
-    if user := session.get('user'):
-        if user.get('usertype') != 'farmer':
+@app.route('/Farmer_Signup', methods=['GET', 'POST'])
+def Farmer_Signup():
+    user = session.get('user')
+    if user:
+        if user.get('usertype') != 'Farmer':
             flash('Your are not farmer, !Please sigin with different id for purchasing Goods', 'danger')
             return redirect(url_for('dashboard'))
         else:
+            print(db.check_farmer_exists(user["email"],de=True))
             if db.check_farmer_exists(user["email"]):
                 flash('You are already registered as a farmer!', 'info')
                 return redirect(url_for('dashboard'))
-            
+       
     if request.method == 'POST':
         aadhar = request.form['aadhar_number']
         db.insert_farmer(user['email'],aadhar)
-        return redirect(url_for('success'))  # Show success page after saving
-    return render_template('former_signup.html')
+        return redirect(url_for('dashboard'))
+    return render_template('farmer_signup.html')
 
-@app.route('/submit_delivery', methods=['POST'])
-def submit_delivery():
-    license = request.form['license']
-    plate_number = request.form['plate_number']
-    vehicle_type = request.form['vehicle_type']
-    address = request.form['address']
-    user_email = session.get('email')  # assuming user is logged in
+@app.route('/Delivery_Person', methods=['GET', 'POST'])
+def Delivery_Person():
+    user = session.get('user')
     
-    db.insert_delivery_person(user_email, license, vehicle_type,  plate_number,address)
-    flash('Delivery person details submitted successfully!', 'success')
-    return redirect(url_for('success'))
+    # Check if user is logged in
+    if user:
+        # Check if the logged-in user is not a delivery person
+        if user.get('usertype') != 'DeliveryPerson':
+            flash('You are not a delivery person! Please sign in with a different ID to purchase goods.', 'danger')
+            return redirect(url_for('dashboard'))
+
+        # Check if the delivery person is already registered
+        if db.check_delivery_person_exists(user.get("email")):
+            flash('You are already registered as a delivery person!', 'info')
+            return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        # Get form data
+        license = request.form.get('license')
+        plate_number = request.form.get('plate_number')
+        vehicle_type = request.form.get('vehicle_type')
+        address = request.form.get('address')
+
+        # Retrieve email from session
+        user_email = user.get('email') if user else None
+        if not user_email:
+            flash('User not logged in or session expired. Please log in again.', 'warning')
+            return redirect(url_for('login'))  # assuming you have a login route
+
+        # Insert delivery person details into the DB
+        db.insert_delivery_person(user_email, license, vehicle_type, plate_number, address)
+        flash('Delivery person details submitted successfully!', 'success')
+        return redirect(url_for('dashboard'))
+
+    return render_template('Delivery_Person_Siginup.html')
+
 
 @app.route('/Profile', methods=['GET', 'POST'])
 def view_update_profile():
-    return render_template('profile.html')
-
+        user = session.get('user')
+        print(user["usertype"])
+        return render_template('profile.html', user=user,user_type=user['usertype'])
 # ------------------------
 # Main Routes
 # ------------------------
@@ -263,26 +318,18 @@ def details():
 # Products
 # ------------------------
 products = [
-    {"id": 1, "name": "Product 1", "price": 100, "image": "1.jpg", "district": "A"},
-    {"id": 2, "name": "Product 2", "price": 200, "image": "2.jpg", "district": "B"},
-    {"id": 3, "name": "Product 3", "price": 300, "image": "3.jpg", "district": "A"},
-    {"id": 4, "name": "Product 4", "price": 400, "image": "4.jpg", "district": "C"},
-    {"id": 5, "name": "Product 5", "price": 500, "image": "5.jpg", "district": "B"},
-    {"id": 6, "name": "Product 6", "price": 600, "image": "6.jpg", "district": "A"},
+    {"id": 1, "name": "Product 1", "price": 100, "image": "images/1.jpg", "district": "A"},
+    {"id": 2, "name": "Product 2", "price": 200, "image": "images/2.jpg", "district": "B"},
+    {"id": 3, "name": "Product 3", "price": 300, "image": "images/3.jpg", "district": "A"},
+    {"id": 4, "name": "Product 4", "price": 400, "image": "images/4.jpg", "district": "C"},
+    {"id": 5, "name": "Product 5", "price": 500, "image": "images/5.jpg", "district": "B"},
+    {"id": 6, "name": "Product 6", "price": 600, "image": "images/6.jpg", "district": "A"},
 ]
 
-@app.route('/profile')
-def profile():
-    user = get_current_user()
-    if user:
-        return render_template('profile.html', user=user)
-    else:
-        flash('Please log in to view your profile.', 'warning')
-        return redirect(url_for('login'))
 
-@app.route('/available_products', methods=['GET', 'POST'])
-def search_products():
-
+@app.route('/available_products', methods=['GET', 'POST'], endpoint='available_products')
+def available_products():
+        filtered_crops = []
         if request.method == 'POST':
             search_term = request.form.get('search', '').lower()
             product_filter = request.form.get('product', '').lower()
@@ -298,35 +345,151 @@ def search_products():
                 (not product_filter or product_filter in crop['name'].lower()) and
                 (not price or crop['price'] <= price)
             ]
+        user = session.get('user')
+        product=db.get_all_crops()
+        print("product:", product)
 
+        columns = [
+            "id",
+            "name",
+            "price",
+            "quantity",
+            "unit",
+            "CreatedAt",
+            "FarmerName",
+            "district",
+            "image",
+            "url"
+        ]
+        safe_email = user['email'].replace('@', '_at_').replace('.', '_dot_')  # Optional sanitization
+        for row in product:
+            FarmerName= row[6]  
+            name = row[1]       
+            id = str(row[0])       
+            image_path =  "uploads/"+safe_email+"/"+name+"/img.jpg"
+            url ="product_detail/"+FarmerName+"/"+id
+            row_with_image = list(row) + [image_path] +[url]
+            filtered_crops.append(dict(zip(columns, row_with_image)))
+
+        print(filtered_crops)
         return render_template('available_products.html', products=filtered_crops)
-    # ------------------------
-# Product Reviews
-# ------------------------
-main_product = {
-    "name": "Organic Tomatoes",
-    "reviews": []
-}
 
-@app.route("/add_product", methods=["GET", "POST"])
+product_categories = ['Onions', 'Tomatoes']
+
+@app.route('/product_detail/<FarmerName>/<name>')
+def product_detail(FarmerName, name):
+    user = session.get('user')
+    filtered_crops = []
+    product=db.get_all_crops()
+    print("product:", product)
+
+    columns = [
+        "id",
+        "name",
+        "price",
+        "quantity",
+        "unit",
+        "CreatedAt",
+        "farmer",
+        "district",
+        "image",
+        "url",
+        #"description"
+    ]
+    safe_email = user['email'].replace('@', '_at_').replace('.', '_dot_')  # Optional sanitization
+    for row in product:
+        FarmerName= row[6]  
+        name = row[1]              
+        if name==name and FarmerName==FarmerName:
+            image_path =  "static/uploads/"+safe_email+"/"+name+"/img.jpg"
+            url ="product_detail/"+FarmerName+name
+            #des =  "static/uploads/"+safe_email+"/"+name+"/description.txt"
+            #des1 = open(des, "r").read()
+            row_with_image = list(row) + [image_path] +[url] #+ [des1]
+            filtered_crops.append(dict(zip(columns, row_with_image)))
+    product = products.get(name)
+    if not product:
+        return "Product not found", 404
+    return render_template('product_detail.html', product=product)
+
+
+@app.route('/productdetail')
+def productdetail():
+    
+    product = {
+        'name': 'Fresh Organic Oranges',
+        'price': '₹80/kg',
+        'district': 'Nagpur',
+        'quantity': '100 kg',
+        'farmer': 'Suresh Patil',
+        'description': (
+            'Juicy, sweet, and sun-ripened organic oranges directly from the orchards of Nagpur. '
+            'These oranges are rich in vitamin C, naturally grown, and harvested without the use of '
+            'any synthetic chemicals or pesticides. Perfect for boosting your immunity and refreshing your day!'
+        ),
+        'image': 'images/1.jpg'
+    }
+    return render_template('product_detail.html', product=product)
+
+@app.route('/process_payment', methods=['GET','POST'])
+def process_payment():
+    if  request.method == 'GET':
+        return render_template('payment.html')
+    if  request.method == 'POST':
+        card_name = request.form['cardName']
+        card_number = request.form['cardNumber']
+        expiry = request.form['expiry']
+        cvv = request.form['cvv']
+
+        flash('Payment processed successfully!', 'success')
+        return redirect(url_for('process_payment'))
+
+
+@app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
-    if request.method == "POST":
-        name = request.form.get("name")
-        comment = request.form.get("comment")
+    global product_categories
+    user = session.get('user')
+    if user["usertype"] != "Farmer":
+        flash('You are not authorized to add products.', 'danger')
+        return redirect(url_for('login'))
 
-        if name and comment:
-            main_product["reviews"].append({
-                "name": name,
-                "comment": comment,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            })
-            flash("Review submitted successfully!", "success")
-        else:
-            flash("All fields are required!", "danger")
+    if request.method == 'POST':
+        file = request.files.get('image')
+        category = request.form.get('product_category')
+        product_name = request.form.get('product_name')
+        description = request.form.get('description')
+        pricePerQuantity = request.form.get('pricePerQuantity')
+        quantity = request.form.get('quantity')
+        unit = request.form.get('unit')
+        name=category+"_"+product_name
+        k=db.insert_crop(name,pricePerQuantity,user["email"], quantity,unit)
+        user= session.get('user')
+        # Create upload path
 
-        return redirect(url_for("home"))
+        safe_email = user['email'].replace('@', '_at_').replace('.', '_dot_')  # Optional sanitization
 
-    return render_template("add_product.html", product=main_product)
+        upload_base = os.path.join("static", "uploads", safe_email, str(name))
+        os.makedirs(upload_base, exist_ok=True)
+ 
+        with open(upload_base+"/description.txt", "w") as f:
+            f.write(description)
+        if file:
+            filename = "img.jpg"
+            filepath = os.path.join(upload_base, filename)
+            image = Image.open(file)
+            rgb_image = image.convert('RGB')
+            rgb_image.save(filepath, 'JPEG')
+            flash("Image uploaded success fully")
+
+        flash("uploaded success fully")
+        # Add new category if it's not in the list
+        if category and category not in product_categories:
+            product_categories.append(category)
+
+        return redirect(url_for('add_product'))
+
+    return render_template('add_product.html', categories=product_categories)
+
 
 # ------------------------
 # Dashboard
@@ -423,7 +586,7 @@ def all_urls():
 
 @app.route("/test")
 def test():
-    return render_template("test.html")
+    return render_template('add_product.html', categories=product_categories)
 
 # ------------------------
 # Run App

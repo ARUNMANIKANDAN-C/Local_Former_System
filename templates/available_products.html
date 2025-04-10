@@ -5,7 +5,7 @@
 {% block content %}
 <div class="side-panel" id="sidePanel">
     <h2>Filter Products</h2>
-    <form method="POST" action="{{ url_for('search_products') }}">
+    <form method="POST" >
         <input type="text" name="search" id="search" placeholder="Search">
         <input type="text" name="product" id="product" placeholder="Product">
         <input type="text" name="district" id="district" placeholder="District">
@@ -16,14 +16,14 @@
     </div>
 <div class="product_list">
     {% for product in products %}
-    <div class="glowing-effect">
+    <a href={{ url_for(product.url)}}><div class="glowing-effect">
         <div class="product">
-            <img src="{{ url_for('static', filename='images/' + product.image) }}" alt="product" class="img_product">
+            <img src="{{ url_for('static', filename= product.image) }}" alt="product" class="img_product">
             <h3>{{ product.name }}</h3>
             <p>Price: ₹{{ product.price }}</p>
-            <button class="button-85">Add to cart</button>
+            <button class="button-85">Order Now!</button>
         </div>
-    </div>
+    </div><a>
     {% endfor %}
 </div>
 {% endblock %}

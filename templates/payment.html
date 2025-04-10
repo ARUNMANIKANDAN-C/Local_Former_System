@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment{% endblock %}
+
+{% block style %}
+.payment-container {
+    padding: 2em;
+    background-color: #121212;
+    border-radius: 10px;
+    width: 50%;
+    margin: auto;
+    color: #e0ffe0;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+}
+.payment-container h2 {
+    color: #00ff88;
+}
+.payment-container label {
+    font-weight: bold;
+    color: #a0f0a0;
+}
+.payment-container input[type="text"] {
+    width: 100%;
+    padding: 0.5em;
+    margin-top: 0.3em;
+    margin-bottom: 1em;
+    border: 1px solid #00ff88;
+    border-radius: 5px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+.payment-container input[type="submit"] {
+    background-color: #00cc66;
+    color: white;
+    border: none;
+    padding: 0.7em 1.5em;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+.payment-container input[type="submit"]:hover {
+    background-color: #00aa55;
+}
+{% endblock %}
+
+{% block content %}
+<div class="payment-container">
+    <h2>Complete Your Payment</h2>
+    <form method="post">
+        <label for="cardName">Cardholder Name:</label><br>
+        <input type="text" id="cardName" name="cardName" required><br>
+
+        <label for="cardNumber">Card Number:</label><br>
+        <input type="text" id="cardNumber" name="cardNumber" required><br>
+
+        <label for="expiry">Expiry Date:</label><br>
+        <input type="text" id="expiry" name="expiry" placeholder="MM/YY" required><br>
+
+        <label for="cvv">CVV:</label><br>
+        <input type="text" id="cvv" name="cvv" required><br>
+
+        <input type="submit" value="Pay Now">
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Optional: Add payment validation or animations here -->
+{% endblock %}

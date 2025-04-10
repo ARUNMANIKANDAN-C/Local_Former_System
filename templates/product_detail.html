@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+    <h2 class="product-title">{{ product.name }}</h2>
+    <div class="product-flex">
+        <div class="product-image">
+            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+            <div class="price">₹{{ product.price }}</div>
+        </div>
+        <div class="product-info">
+            <p><span class="highlight-info">District:</span> {{ product.district }}</p>
+            <p><span class="highlight-info">Quantity Available:</span> {{ product.quantity }}</p>
+            <p><span class="highlight-info">Farmer Name:</span> {{ product.farmer }}</p>
+            <p><span class="highlight-info">Description:</span> {{ product.description }}</p>
+
+            <div class="button-group">
+                <button class="btn-primary">Purchase Product</button>
+                <a href="{{ url_for('add_product') }}" class="btn-secondary">Back to Products</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block style %}
+.product-detail {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 40px;
+    border-radius: 16px;
+    background-color: #0d0d0d;
+    box-shadow: 0 0 20px rgba(0, 255, 100, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e0ffe6;
+}
+
+.product-title {
+    color: #00ff88;
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 35px;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.product-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.product-image {
+    flex: 1;
+    min-width: 280px;
+    max-width: 350px;
+}
+
+.product-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.2);
+}
+
+.price {
+    font-size: 22px;
+    font-weight: 600;
+    color: #00ff88;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.product-info {
+    flex: 2;
+    min-width: 280px;
+}
+
+.product-info p {
+    font-size: 18px;
+    margin: 12px 0;
+    line-height: 1.5;
+}
+
+.highlight-info {
+    color: #00ff88;
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+.button-group {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.btn-primary {
+    background-color: #00cc66;
+    color: #000;
+}
+
+.btn-primary:hover {
+    background-color: #00e67a;
+    color: #000;
+}
+
+.btn-secondary {
+    background-color: #111;
+    color: #00ff88;
+    border: 1px solid #00ff88;
+}
+
+.btn-secondary:hover {
+    background-color: #1a1a1a;
+    color: #00ff88;
+}
+
+@media (max-width: 768px) {
+    .product-flex {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .product-info {
+        text-align: center;
+    }
+
+    .price {
+        text-align: center;
+    }
+
+    .button-group {
+        justify-content: center;
+    }
+}
+{% endblock %}

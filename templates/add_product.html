@@ -1,62 +1,65 @@
 {% extends 'base.html' %}
 
-{% block title %}add_products{% endblock %}
-{% block style %}
-form table tr:hover {
-    background-color:rgb(69, 129, 61);
-  }
-{% endblock %}
+{% block title %}Add Products{% endblock %}
 
 {% block content %}
 <div class="login">
-    <form class="form" action="available_product.html">
-        <table>
-            <tr>
-                <td><label for="productList">Select Product Category:</label></td>
-                <td>
-                    <select id="productList" name="product">
-                        <option value="onions">Onions</option>
-                        <option value="tomatoes">Tomatoes</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td><label for="productName">Add New Product:</label></td>
-                <td>
-                    <input type="text" id="productName" placeholder="Enter product name">
-                    <button type="button">Add</button>
-                </td>
-            </tr>
-            <tr>
-                <td><label for="description">Product Description:</label></td>
-                <td><input type="text" name="description" placeholder="Fresh organic tomatoes" required></td>
-            </tr>
-            <tr>
-                <td><label for="Image">Upload your files:</label></td>
-                <td><input type="file" id="Image" name="Image" multiple></td>
-            </tr>
-            <tr>
-                <td><label for="availableKG">Available (KG):</label></td>
-                <td><input type="number" name="availableKG" placeholder="10" required></td>
-            </tr>
-            <tr>
-                <td><label for="pricePerQuantity">Price per Quantity:</label></td>
-                <td><input type="number" name="pricePerQuantity" placeholder="5" required></td>
-            </tr>
-            <tr>
-                <td><label for="quantityPerKG">Quantity per KG:</label></td>
-                <td><input type="number" name="quantityPerKG" placeholder="4" required></td>
-            </tr>
-            <tr>
-                <td colspan="2" style="text-align: center;">
-                    <input type="submit" value="Submit">
-                </td>
-            </tr>
-        </table>
+    <form class="form" method="POST" enctype="multipart/form-data">
+        
+        <label for="productList">Select or Type Product Category:</label>
+        <select id="productList" name="product_category" required>
+            {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" id="productInput" placeholder="Or type new category">
+        <button type="button" onclick="addCategory()">Add</button>
+
+        <label for="productName">Product Name:</label>
+        <input type="text" id="productName" name="product_name" placeholder="Enter product name" required>
+
+        <label for="description">Product Description:</label>
+        <input type="text" id="description" name="description" placeholder="Fresh organic tomatoes" required>
+
+        <label for="Image">Upload your image:</label>
+        <input type="file" id="Image" name="image" accept="image/*" required>
+
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" placeholder="10" min="0" required>
+
+        <label for="pricePerQuantity">Price per Quantity:</label>
+        <input type="number" id="pricePerQuantity" name="pricePerQuantity" placeholder="5" min="0" required>
+        
+        <label for="unit">Unit in Kg</label>
+        <input type="number" id="unit" name="unit" placeholder="Kg" required>
+
+        <div style="text-align: center;">
+            <input type="submit" value="Submit">
+        </div>
     </form>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script>
+    function addCategory() {
+        const input = document.getElementById('productInput');
+        const dropdown = document.getElementById('productList');
+        const value = input.value.trim();
 
+        if (value !== "") {
+            const exists = Array.from(dropdown.options).some(opt => opt.value.toLowerCase() === value.toLowerCase());
+            if (!exists) {
+                const newOption = document.createElement('option');
+                newOption.value = value;
+                newOption.text = value;
+                dropdown.add(newOption);
+            }
+            dropdown.value = value;
+            input.value = "";
+        } else {
+            alert("Please type a category name.");
+        }
+    }
+</script>
 {% endblock %}

@@ -195,13 +195,31 @@ class FarmManagementDB:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
+                               SELECT FArmerID FROM Farmer WHERE UserID = ?
+                            """, (farmer_id,))
+                row = cursor.fetchone()[0]
+                print(row)
+                cursor.execute("""
                     INSERT INTO Crop (Name, Price, FarmerID, QuantityAvailable, Unit) 
                     VALUES (?, ?, ?, ?, ?)
-                """, (name, price, farmer_id, quantity_available, unit))
-                return cursor.lastrowid
-        except sqlite3.Error as e:
-            print(f"[insert_crop] Error: {e}")
+                """, (name, price, row, quantity_available, unit))
+                conn.commit()
+
+                cursor.execute("""
+                    SELECT CropID FROM Crop WHERE Name = ? AND FarmerID = ?
+                """, (name, farmer_id))
+                row = cursor.fetchone()
+                if row:
+                    return row[0]
+                return None
+        except sqlite3.IntegrityError as e:
+            print(f"[insert_crop] Integrity error: {e}")
             return None
+        except sqlite3.Error as e:
+            print(f"[insert_crop] Database error: {e}")
+            return None
+
+
 
     def insert_order(self, customer_id, total_amount=0):
         try:
@@ -867,12 +885,15 @@ class FarmManagementDB:
             print(f"[get_count_new_coustmers_by_month_for_former] Error: {e}")
             return None
 
-    def check_farmer_exists(self, user_id):
+    def check_farmer_exists(self, user_id,de=False):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT * FROM Farmer WHERE UserID = ?", (user_id,))
-                return cursor.fetchone() is not None
+                if not de:
+                    return cursor.fetchone() is not None
+                else:
+                    return cursor.fetchone()
         except sqlite3.Error as e:
             print(f"[check_farmer_exists] Error: {e}")
             return False
@@ -886,7 +907,42 @@ class FarmManagementDB:
         except sqlite3.Error as e:
             print(f"[check_delivery_person_exists] Error: {e}")
             return False
-        
+    
+    def get_all_crops1(self):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM Crop")
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_all_crops] Error: {e}")
+            return None
+    def get_all_crops(self):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                query = """
+                    SELECT 
+                        Crop.CropID,
+                        Crop.Name,
+                        Crop.Price,
+                        Crop.QuantityAvailable,
+                        Crop.Unit,
+                        Crop.CreatedAt,
+                        User.Name as FarmerName,
+                        User.Address as FarmerAddress
+                    FROM Crop
+                    JOIN Farmer ON Crop.FarmerID = Farmer.FarmerID
+                    JOIN User ON Farmer.UserID = User.EmailID
+                """
+                cursor.execute(query)
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"[get_all_crops] Error: {e}")
+            return None
+
+
+
 
 # Run this section only when executing directly
 if __name__ == "__main__":
