@@ -8,6 +8,7 @@ from functools import wraps
 from otp_sender import GmailSender
 from werkzeug.utils import secure_filename
 from PIL import Image
+import re
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'fallback-hardcoded-key'
@@ -329,107 +330,74 @@ products = [
 
 @app.route('/available_products', methods=['GET', 'POST'], endpoint='available_products')
 def available_products():
-        filtered_crops = []
-        if request.method == 'POST':
-            search_term = request.form.get('search', '').lower()
-            product_filter = request.form.get('product', '').lower()
-            try:
-                price = float(request.form.get('price', 0)) if request.form.get('price') else None
-            except ValueError:
-                price = None
-                flash('Invalid price value', 'danger')
-
-            filtered_crops = [
-                crop for crop in filtered_crops
-                if (not search_term or search_term in crop['name'].lower()) and
-                (not product_filter or product_filter in crop['name'].lower()) and
-                (not price or crop['price'] <= price)
-            ]
-        user = session.get('user')
-        product=db.get_all_crops()
-        print("product:", product)
-
-        columns = [
-            "id",
-            "name",
-            "price",
-            "quantity",
-            "unit",
-            "CreatedAt",
-            "FarmerName",
-            "district",
-            "image",
-            "url"
-        ]
-        safe_email = user['email'].replace('@', '_at_').replace('.', '_dot_')  # Optional sanitization
-        for row in product:
-            FarmerName= row[6]  
-            name = row[1]       
-            id = str(row[0])       
-            image_path =  "uploads/"+safe_email+"/"+name+"/img.jpg"
-            url ="product_detail/"+FarmerName+"/"+id
-            row_with_image = list(row) + [image_path] +[url]
-            filtered_crops.append(dict(zip(columns, row_with_image)))
-
-        print(filtered_crops)
-        return render_template('available_products.html', products=filtered_crops)
-
-product_categories = ['Onions', 'Tomatoes']
-
-@app.route('/product_detail/<FarmerName>/<name>')
-def product_detail(FarmerName, name):
     user = session.get('user')
-    filtered_crops = []
-    product=db.get_all_crops()
-    print("product:", product)
+    if not user:
+        flash("User not logged in", "danger")
+        return render_template('available_products.html', products=[])
+
+    product_list = db.get_all_crops()
+    print("product:", product_list)
 
     columns = [
-        "id",
-        "name",
-        "price",
-        "quantity",
-        "unit",
-        "CreatedAt",
-        "farmer",
-        "district",
-        "image",
-        "url",
-        #"description"
+        "id", "name", "price", "quantity", "unit", "CreatedAt", "FarmerName", "district", "image", "url"
     ]
-    safe_email = user['email'].replace('@', '_at_').replace('.', '_dot_')  # Optional sanitization
-    for row in product:
-        FarmerName= row[6]  
-        name = row[1]              
-        if name==name and FarmerName==FarmerName:
-            image_path =  "static/uploads/"+safe_email+"/"+name+"/img.jpg"
-            url ="product_detail/"+FarmerName+name
-            #des =  "static/uploads/"+safe_email+"/"+name+"/description.txt"
-            #des1 = open(des, "r").read()
-            row_with_image = list(row) + [image_path] +[url] #+ [des1]
-            filtered_crops.append(dict(zip(columns, row_with_image)))
-    product = products.get(name)
-    if not product:
-        return "Product not found", 404
-    return render_template('product_detail.html', product=product)
+
+    safe_email = user['email'].replace('@', '_at_').replace('.', '_dot_')
+    filtered_crops = []
+
+    for row in product_list:
+        crop_name = row[1]
+        farmer_name = row[6]
+        crop_id = str(row[0])
+        image_path = f"uploads/{safe_email}/{crop_name}/img.jpg"
+        url = url_for('product_detail', FarmerName=farmer_name, product_id=crop_id)
+
+        row_with_image = list(row) + [image_path, url]
+        crop_dict = dict(zip(columns, row_with_image))
+
+        filtered_crops.append(crop_dict)
+
+    return render_template('available_products.html', products=filtered_crops)
 
 
-@app.route('/productdetail')
-def productdetail():
-    
-    product = {
-        'name': 'Fresh Organic Oranges',
-        'price': '₹80/kg',
-        'district': 'Nagpur',
-        'quantity': '100 kg',
-        'farmer': 'Suresh Patil',
-        'description': (
-            'Juicy, sweet, and sun-ripened organic oranges directly from the orchards of Nagpur. '
-            'These oranges are rich in vitamin C, naturally grown, and harvested without the use of '
-            'any synthetic chemicals or pesticides. Perfect for boosting your immunity and refreshing your day!'
-        ),
-        'image': 'images/1.jpg'
-    }
-    return render_template('product_detail.html', product=product)
+@app.route('/product_detail/<FarmerName>/<product_id>')
+def product_detail(FarmerName, product_id):
+    user = session.get('user')
+    if not user:
+        return "User not logged in", 401
+
+    safe_email = user['email'].replace('@', '_at_').replace('.', '_dot_')
+    product_list = db.get_all_crops()
+    print("product:", product_list)
+
+    columns = [
+        "id", "name", "price", "quantity", "unit", "CreatedAt", "FarmerName", "district", "image", "url", "description"
+    ]
+
+    for row in product_list:
+        if str(row[0]) == str(product_id) and row[6] == FarmerName:
+            crop_name = row[1]
+            FarmerName = row[6]
+            crop_id = str(row[0])
+            image_path = f"static/uploads/{safe_email}/{crop_name}/img.jpg"
+            url = url_for('product_detail', FarmerName=FarmerName, product_id=crop_id)
+
+            safe_crop_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', crop_name)
+
+            description_path = f"static/uploads/{safe_email}/{safe_crop_name}/description.txt"
+
+            try:
+                with open(description_path, "r") as f:
+                    description = f.read()
+            except FileNotFoundError:
+                description = "No description available."
+
+            row_with_details = list(row) + [image_path, url, description]
+            product = dict(zip(columns, row_with_details))
+            return render_template('product_detail.html', product=product)
+
+    return "Product not found", 404
+
 
 @app.route('/process_payment', methods=['GET','POST'])
 def process_payment():
@@ -470,8 +438,10 @@ def add_product():
 
         upload_base = os.path.join("static", "uploads", safe_email, str(name))
         os.makedirs(upload_base, exist_ok=True)
- 
-        with open(upload_base+"/description.txt", "w") as f:
+        safe_crop_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', name)
+
+        description_path = f"static/uploads/{safe_email}/{safe_crop_name}/description.txt"
+        with open(description_path, "w") as f:
             f.write(description)
         if file:
             filename = "img.jpg"

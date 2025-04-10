@@ -16,7 +16,7 @@
     </div>
 <div class="product_list">
     {% for product in products %}
-    <a href={{ url_for(product.url)}}><div class="glowing-effect">
+    <a href={{ product.url}}><div class="glowing-effect">
         <div class="product">
             <img src="{{ url_for('static', filename= product.image) }}" alt="product" class="img_product">
             <h3>{{ product.name }}</h3>
