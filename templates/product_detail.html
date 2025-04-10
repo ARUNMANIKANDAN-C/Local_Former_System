@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Product Details{% endblock %}
+
+{% block content %}
+<style>
+    .product-detail {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 30px;
+        border-radius: 12px;
+        background-color: #f9f9f9;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .product-detail h2 {
+        color: #2c3e50;
+        font-size: 28px;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    .product-flex {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .product-image {
+        flex: 1;
+        min-width: 280px;
+        max-width: 300px;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .product-info {
+        flex: 2;
+        min-width: 280px;
+    }
+
+    .product-info p {
+        font-size: 18px;
+        line-height: 1.6;
+        margin: 10px 0;
+    }
+
+    .highlight-info {
+        color: #e67e22;
+        font-weight: bold;
+    }
+
+    .product-info strong {
+        color: #333;
+    }
+
+    .price {
+        font-size: 20px;
+        font-weight: bold;
+        color: #145A32;
+        margin-top: 15px;
+    }
+
+    .button-85 {
+        padding: 10px 20px;
+        background-color: #145A32;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        margin-right: 15px;
+    }
+
+    .button-85:hover {
+        background-color: #0e3e22;
+    }
+
+    .button-group {
+        margin-top: 25px;
+    }
+</style>
+
+<div class="product-detail">
+    <h2>Product Name: Fresh Organic Oranges</h2>
+    <div class="product-flex">
+        <div class="product-image">
+            <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="Fresh Oranges">
+            <div class="price">Price: ₹80/kg</div>
+        </div>
+        <div class="product-info">
+            <p><strong class="highlight-info">District:</strong> Nagpur</p>
+            <p><strong class="highlight-info">Quantity Available:</strong> 100 kg</p>
+            <p><strong class="highlight-info">Farmer Name:</strong> Suresh Patil</p>
+            <p><strong>Description:</strong> 
+                Juicy, sweet, and sun-ripened organic oranges directly from the orchards of Nagpur. These oranges are rich in vitamin C, naturally grown, and harvested without the use of any synthetic chemicals or pesticides. Perfect for boosting your immunity and refreshing your day!
+            </p>
+
+            <div class="button-group">
+                <button class="button-85">Purchase Product</button>
+                <a href="{{ url_for('add_product') }}" class="button-85">Back to Products</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
