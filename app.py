@@ -9,44 +9,6 @@ from otp_sender import GmailSender
 from werkzeug.utils import secure_filename
 from PIL import Image
 
-"""
-📦 Class: FarmManagementDB
-    🔧 Function: __init__
-    🔧 Function: connect_db
-    🔧 Function: create_tables
-    🔧 Function: insert_user
-    🔧 Function: insert_farmer
-    🔧 Function: insert_customer
-    🔧 Function: insert_delivery_person
-    🔧 Function: insert_crop
-    🔧 Function: insert_order
-    🔧 Function: insert_order_detail
-    🔧 Function: insert_payment
-    🔧 Function: insert_delivery
-    🔧 Function: insert_delivery_history
-    🔧 Function: insert_feedback
-    🔧 Function: insert_delivery_rating
-    🔧 Function: update_user
-    🔧 Function: update_crop
-    🔧 Function: update_order_status
-    🔧 Function: update_payment_status
-    🔧 Function: update_delivery_status
-    🔧 Function: update_delivery_person_status
-    🔧 Function: update_feedback
-    🔧 Function: assign_delivery_person
-    🔧 Function: delete_user
-    🔧 Function: delete_delivery_person
-    🔧 Function: get_user_by_email
-    🔧 Function: get_user_by_phone
-    🔧 Function: get_farmer
-    🔧 Function: get_customer
-    🔧 Function: get_delivery_person
-    🔧 Function: get_available_delivery_persons
-    🔧 Function: get_delivery
-    🔧 Function: get_delivery_history
-    🔧 Function: get_delivery_person_statistics
-    🔧 Function: get_order_details_with_delivery
-"""
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'fallback-hardcoded-key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(weeks=1)
@@ -60,10 +22,7 @@ sender = GmailSender()
 @app.context_processor
 def inject_user_image():
     user = session.get('user')
-    if user and user.get("email") == "amrita.team.b11@gmail.com":
-        image_exists = True
-        image_filename = 'images/arun.jpg'
-    elif user and user.get("email"):
+    if user and user.get("email"):
         safe_email = user.get("email").replace('@', '_at_').replace('.', '_dot_')  # Optional sanitization
         filename = f"{safe_email}.jpg"
         image_exists = True
@@ -224,17 +183,53 @@ def verify_otp():
 
     return render_template('verify_otp.html')
 
+@app.route('/Former_Signup', methods=['GET', 'POST'])
+def Former_Signup():
+    if user := session.get('user'):
+        if user.get('usertype') != 'farmer':
+            flash('Your are not farmer, !Please sigin with different id for purchasing Goods', 'danger')
+            return redirect(url_for('dashboard'))
+        else:
+            if db.check_farmer_exists(user["email"]):
+                flash('You are already registered as a farmer!', 'info')
+                return redirect(url_for('dashboard'))
+            
+    if request.method == 'POST':
+        aadhar = request.form['aadhar_number']
+        db.insert_farmer(user['email'],aadhar)
+        return redirect(url_for('success'))  # Show success page after saving
+    return render_template('former_signup.html')
+
+@app.route('/submit_delivery', methods=['POST'])
+def submit_delivery():
+    license = request.form['license']
+    plate_number = request.form['plate_number']
+    vehicle_type = request.form['vehicle_type']
+    address = request.form['address']
+    user_email = session.get('email')  # assuming user is logged in
+    
+    db.insert_delivery_person(user_email, license, vehicle_type,  plate_number,address)
+    flash('Delivery person details submitted successfully!', 'success')
+    return redirect(url_for('success'))
+
+@app.route('/Profile', methods=['GET', 'POST'])
+def view_update_profile():
+    return render_template('profile.html')
+
 # ------------------------
 # Main Routes
 # ------------------------
 @app.route('/')
 def index():
-    return redirect(url_for("home"))
+    return redirect(url_for("welcome"))
 
 @app.route('/home')
 def home():
     return render_template("home.html")
 
+@app.route('/wlecome')
+def welcome():
+    return render_template("welcome.html")
 @app.route('/about')
 def about():
     return render_template("about.html")
@@ -276,40 +271,36 @@ products = [
     {"id": 6, "name": "Product 6", "price": 600, "image": "6.jpg", "district": "A"},
 ]
 
+@app.route('/profile')
+def profile():
+    user = get_current_user()
+    if user:
+        return render_template('profile.html', user=user)
+    else:
+        flash('Please log in to view your profile.', 'warning')
+        return redirect(url_for('login'))
+
 @app.route('/available_products', methods=['GET', 'POST'])
 def search_products():
-    try:
-        crops = db.get_all_crops()
-        filtered_crops = [{
-            "id": crop[0],
-            "name": crop[1],
-            "price": crop[2],
-            "farmer_id": crop[3],
-            "quantity": crop[4],
-            "unit": crop[5]
-        } for crop in crops]
-    except Exception as e:
-        flash(f'Error fetching crops: {e}', 'danger')
-        filtered_crops = []
 
-    if request.method == 'POST':
-        search_term = request.form.get('search', '').lower()
-        product_filter = request.form.get('product', '').lower()
-        try:
-            price = float(request.form.get('price', 0)) if request.form.get('price') else None
-        except ValueError:
-            price = None
-            flash('Invalid price value', 'danger')
+        if request.method == 'POST':
+            search_term = request.form.get('search', '').lower()
+            product_filter = request.form.get('product', '').lower()
+            try:
+                price = float(request.form.get('price', 0)) if request.form.get('price') else None
+            except ValueError:
+                price = None
+                flash('Invalid price value', 'danger')
 
-        filtered_crops = [
-            crop for crop in filtered_crops
-            if (not search_term or search_term in crop['name'].lower()) and
-               (not product_filter or product_filter in crop['name'].lower()) and
-               (not price or crop['price'] <= price)
-        ]
+            filtered_crops = [
+                crop for crop in filtered_crops
+                if (not search_term or search_term in crop['name'].lower()) and
+                (not product_filter or product_filter in crop['name'].lower()) and
+                (not price or crop['price'] <= price)
+            ]
 
-    return render_template('available_products.html', products=filtered_crops)
-# ------------------------
+        return render_template('available_products.html', products=filtered_crops)
+    # ------------------------
 # Product Reviews
 # ------------------------
 main_product = {

@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<style>
+  .profile-container {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .profile-pic-section {
+    text-align: center;
+  }
+
+  .profile-pic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  .form-section {
+    flex-grow: 1;
+  }
+
+  .login{
+    width: 80%;
+
+  }
+</style>
+
+<div class="login">
+  <h2>{{ user_type }} Profile</h2>
+
+  <div class="profile-container">
+    <div class="profile-pic-section">
+      <img id="profileImage" 
+      src="{{ profile_pic_url if profile_pic_url else url_for('static', filename='images/logo.png') }}" 
+      alt="Profile Picture" 
+      class="profile-pic"> 
+      <input type="file" id="profilePicInput" name="profile_pic" accept="image/*" style="margin-top: 10px;">
+    </div>
+
+    <div class="form-section">
+      <form method="POST" id="profileForm" class="form" enctype="multipart/form-data">
+        <label>Email:</label>
+        <input type="text" class="form-control" value="{{ email }}" readonly>
+
+        <label>Name:</label>
+        <input type="text" class="form-control" name="name" id="name" value="{{ name }}" readonly required>
+
+        <label>Phone Number:</label>
+        <input type="text" class="form-control" name="phone" id="phone" value="{{ phone }}" maxlength="10" readonly required>
+
+        <label>Address:</label>
+        <textarea class="form-control" name="address" id="address" readonly>{{ address }}</textarea>
+
+        {% if user_type == 'Farmer' %}
+        <label>Aadhar Number:</label>
+        <input type="text" class="form-control" name="aadhar" id="aadhar" value="{{ aadhar or '' }}" maxlength="12" readonly required>
+        {% endif %}
+
+        {% if user_type == 'DeliveryPerson' %}
+        <label>Vehicle Number:</label>
+        <input type="text" class="form-control" name="vehicle_number" id="vehicle_number" value="{{ vehicle_number or '' }}" readonly required>
+
+        <label>Vehicle Type:</label>
+        <input type="text" class="form-control" name="vehicle_type" id="vehicle_type" value="{{ vehicle_type or '' }}" readonly required>
+
+        <label>License Number:</label>
+        <input type="text" class="form-control" name="license_number" id="license_number" value="{{ license_number or '' }}" readonly required>
+
+        <label>Available Status:</label>
+        <section>
+          <input type="radio" name="available_status" id="available" value="Available" {% if available_status == 'Available' %}checked{% endif %} disabled>
+          <label for="available">Available</label>
+          <input type="radio" name="available_status" id="not_available" value="Not Available" {% if available_status == 'Not Available' %}checked{% endif %} disabled>
+          <label for="not_available">Not Available</label>
+        </section>
+        {% endif %}
+
+        <button type="button" id="edit-btn" onclick="enableEditing()">Edit Profile</button>
+        <button type="submit" id="save-btn" style="display: none;">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function enableEditing() {
+    document.getElementById('name').readOnly = false;
+    document.getElementById('phone').readOnly = false;
+    document.getElementById('address').readOnly = false;
+
+    const aadharInput = document.getElementById('aadhar');
+    if (aadharInput) aadharInput.readOnly = false;
+
+    const vehicleInputs = ['vehicle_number', 'vehicle_type', 'license_number'];
+    vehicleInputs.forEach(id => {
+      const input = document.getElementById(id);
+      if (input) input.readOnly = false;
+    });
+
+    const radioButtons = document.getElementsByName('available_status');
+    radioButtons.forEach(rb => rb.disabled = false);
+
+    document.getElementById('edit-btn').style.display = 'none';
+    document.getElementById('save-btn').style.display = 'inline-block';
+  }
+
+  // Live Preview of Profile Picture
+  document.getElementById('profilePicInput').addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById('profileImage').src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
+
+{% endblock %}

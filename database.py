@@ -867,6 +867,27 @@ class FarmManagementDB:
             print(f"[get_count_new_coustmers_by_month_for_former] Error: {e}")
             return None
 
+    def check_farmer_exists(self, user_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM Farmer WHERE UserID = ?", (user_id,))
+                return cursor.fetchone() is not None
+        except sqlite3.Error as e:
+            print(f"[check_farmer_exists] Error: {e}")
+            return False
+        
+    def check_delivery_person_exists(self, user_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM DeliveryPerson WHERE UserID = ?", (user_id,))
+                return cursor.fetchone() is not None
+        except sqlite3.Error as e:
+            print(f"[check_delivery_person_exists] Error: {e}")
+            return False
+        
+
 # Run this section only when executing directly
 if __name__ == "__main__":
     db = FarmManagementDB()

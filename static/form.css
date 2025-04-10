@@ -1,11 +1,9 @@
-/* File input styling */
+/* File input styling */ 
 /* Global styling for dark theme */
 body {
   background: url('img.jpg') no-repeat center center fixed;
-
   color: black;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
   padding: 0;
 }
 
@@ -25,7 +23,6 @@ body::before {
 input[type="file"] {
   display: block;
   width: 90%;
-  margin: 10px auto;
   padding: 10px;
   border: 2px dashed green;
   border-radius: 6px;
@@ -62,7 +59,6 @@ input[type="file"]::before {
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
-  margin-right: 10px;
 }
 
 /* Hover effect for the custom button */
@@ -73,9 +69,9 @@ input[type="file"]:hover::before {
 
 /* General form styling */
 .form {
-  display: flex;
-  flex-direction: column;
-  margin: 20px auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns */
+  gap: 15px;
   padding: 20px;
   background: rgba(20, 20, 20, 0.9);
   border-radius: 12px;
@@ -85,9 +81,12 @@ input[type="file"]:hover::before {
 /* Label styling */
 .form label {
   font-weight: bold;
-  margin: 10px 0 5px;
   color: rgb(102, 255, 0);
+  display: flex;
+  justify-content: center; /* horizontal */
+  align-items: center;     /* vertical */
 }
+
 
 /* Input and select styling */
 .form input,
@@ -101,11 +100,11 @@ input[type="file"]:hover::before {
   font-size: 16px;
   font-family: inherit;
   box-sizing: border-box;
+
 }
 
 /* Submit button styling */
 .form input[type="submit"] {
-  margin-top: 15px;
   background: darkgreen;
   color: rgb(102, 255, 0);
   font-weight: bold;
@@ -126,7 +125,6 @@ button,
 input[type="file"] {
   width: 90%;
   padding: 10px;
-  margin: 10px auto;
   display: block;
   border: 2px solid darkolivegreen;
   border-radius: 6px;
@@ -147,12 +145,13 @@ button:focus {
 /* Button styling */
 button {
   background-color: green;
-  color: rgb(102, 255, 0);
+  color: rgb(0, 238, 255);
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.3s, transform 0.2s;
   border: none;
   border-radius: 6px;
+  margin:1px;
 }
 
 button:hover {
@@ -163,7 +162,6 @@ button:hover {
 form table {
   width: 100%;
   border-collapse: collapse;
-  margin: 20px auto;
   background: rgba(20, 20, 20, 0.9);
   border-radius: 12px;
   box-shadow: 0 0 10px green;
@@ -179,4 +177,8 @@ form table td, form table th {
 form table tr:hover {
   background-color: #56eb42;
   cursor: pointer;
+}
+
+form textarea {
+  background-color: #56eb42;
 }
