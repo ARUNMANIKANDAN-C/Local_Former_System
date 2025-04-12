@@ -251,16 +251,13 @@ def Delivery_Person():
         license = request.form.get('license')
         plate_number = request.form.get('plate_number')
         vehicle_type = request.form.get('vehicle_type')
-        address = request.form.get('address')
-
-        # Retrieve email from session
+        available_status = request.form.get('available_status')
         user_email = user.get('email') if user else None
         if not user_email:
             flash('User not logged in or session expired. Please log in again.', 'warning')
-            return redirect(url_for('login'))  # assuming you have a login route
-
-        # Insert delivery person details into the DB
-        db.insert_delivery_person(user_email, license, vehicle_type, plate_number, address)
+            return redirect(url_for('login'))  
+        
+        db.insert_delivery_person(user_email, license, vehicle_type, plate_number, available_status)
         flash('Delivery person details submitted successfully!', 'success')
         return redirect(url_for('dashboard'))
 
@@ -268,10 +265,65 @@ def Delivery_Person():
 
 
 @app.route('/Profile', methods=['GET', 'POST'])
+@login_required
 def view_update_profile():
         user = session.get('user')
-        print(user["usertype"])
-        return render_template('profile.html', user=user,user_type=user['usertype'])
+        user_type=user['usertype']
+        email=user['email']
+        if request.method == 'POST' and user_type=="Customer": 
+            name = request.form.get('name')
+            email = request.form.get('email')
+            phone = request.form.get('phone')
+            address = request.form.get('address')
+
+            db.update_3user(user['email'], name, phone, address)
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('view_update_profile'))
+        
+        elif request.method == 'POST' and user_type=="Farmer":
+            name = request.form.get('name')
+            email = request.form.get('email')
+            phone = request.form.get('phone')
+            address = request.form.get('address')
+            aadhar = request.form.get('aadhar')
+
+            db.update_farmer(user['email'], name, phone, address, aadhar)
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('view_update_profile'))
+        
+        elif request.method == 'POST' and user_type=="DeliveryPerson":
+            name = request.form.get('name')
+            email = request.form.get('email')
+            phone = request.form.get('phone')
+            address = request.form.get('address')
+            license = request.form.get('license')
+            vehicle_type = request.form.get('vehicle_type')
+            plate_number = request.form.get('plate_number')
+            status=request.form.get('available_status')
+
+            db.update_delivery_person(user['email'], name, phone, address, license, vehicle_type, plate_number,status)
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('view_update_profile'))
+
+
+        if user_type=="Customer":
+            user1 = db.get_user_by_email(user['email'])
+            (EmailID, Name, PhoneNumber, Password, Address, CreatedAt, UserType) = user1
+            print(user["usertype"])
+            return render_template('profile.html', user=user,user_type=user_type,phone=PhoneNumber, email=email, address=Address,name=Name)
+        
+        elif user_type=="Farmer":
+            user1 = db.get_farmer_by_email(user['email'])
+            (EmailID, Name, PhoneNumber, Password, Address, CreatedAt, UserType,Aadhar) = user1
+            print(user["usertype"])
+            return render_template('profile.html', user=user,user_type=user_type,phone=PhoneNumber, email=email, address=Address, name=Name,aadhar=Aadhar)
+        elif user_type=="DeliveryPerson":
+            user1 = db.get_deliver_person_by_email(user['email'])
+            print(user1)
+            (EmailID, Name, PhoneNumber, Password, Address, CreatedAt, UserType,license,vehicle_type,vehicle_number,status) = user1
+            print(user["usertype"])
+            return render_template('profile.html', user=user,user_type=user_type,phone=PhoneNumber, email=email, address=Address, name=Name,license_number=license,vehicle_type=vehicle_type,vehicle_number=vehicle_number,available_status=status) 
+
 # ------------------------
 # Main Routes
 # ------------------------
@@ -349,7 +401,8 @@ def available_products():
         crop_name = row[1]
         farmer_name = row[6]
         crop_id = str(row[0])
-        image_path = f"uploads/{safe_email}/{crop_name}/img.jpg"
+        safe_crop_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', crop_name)
+        image_path = f"uploads/{safe_email}/{safe_crop_name}/img.jpg"
         url = url_for('product_detail', FarmerName=farmer_name, product_id=crop_id)
 
         row_with_image = list(row) + [image_path, url]
@@ -379,11 +432,13 @@ def product_detail(FarmerName, product_id):
             crop_name = row[1]
             FarmerName = row[6]
             crop_id = str(row[0])
-            image_path = f"static/uploads/{safe_email}/{crop_name}/img.jpg"
-            url = url_for('product_detail', FarmerName=FarmerName, product_id=crop_id)
-
+            crop_name = row[1]
+            farmer_name = row[6]
+            crop_id = str(row[0])
             safe_crop_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', crop_name)
-
+            image_path = f"uploads/{safe_email}/{safe_crop_name}/img.jpg"
+            url = url_for('product_detail', FarmerName=FarmerName, product_id=crop_id)
+            
             description_path = f"static/uploads/{safe_email}/{safe_crop_name}/description.txt"
 
             try:
@@ -394,6 +449,7 @@ def product_detail(FarmerName, product_id):
 
             row_with_details = list(row) + [image_path, url, description]
             product = dict(zip(columns, row_with_details))
+            print(product)
             return render_template('product_detail.html', product=product)
 
     return "Product not found", 404
@@ -411,6 +467,19 @@ def process_payment():
 
         flash('Payment processed successfully!', 'success')
         return redirect(url_for('process_payment'))
+    
+product_categories = [
+    "Leafy Greens",       # e.g., spinach, lettuce
+    "Root Vegetables",    # e.g., carrot, beetroot
+    "Cruciferous",        # e.g., broccoli, cauliflower
+    "Alliums",            # e.g., onion, garlic
+    "Marrow",             # e.g., zucchini, cucumber
+    "Pods & Seeds",       # e.g., peas, beans
+    "Tubers",             # e.g., potato, yam
+    "Fungi",              # e.g., mushrooms
+    "Nightshades",        # e.g., tomato, eggplant
+    "Stems & Shoots"      # e.g., asparagus, celery
+]
 
 
 @app.route('/add_product', methods=['GET', 'POST'])
@@ -435,10 +504,10 @@ def add_product():
         # Create upload path
 
         safe_email = user['email'].replace('@', '_at_').replace('.', '_dot_')  # Optional sanitization
-
-        upload_base = os.path.join("static", "uploads", safe_email, str(name))
-        os.makedirs(upload_base, exist_ok=True)
         safe_crop_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', name)
+        upload_base = os.path.join("static", "uploads", safe_email, safe_crop_name)
+        os.makedirs(upload_base, exist_ok=True)
+        
 
         description_path = f"static/uploads/{safe_email}/{safe_crop_name}/description.txt"
         with open(description_path, "w") as f:

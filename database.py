@@ -1,5 +1,5 @@
 import sqlite3
-
+from tabulate import tabulate
 class FarmManagementDB:
     def __init__(self, db_name="farm_management.db"):
         self.db_name = db_name
@@ -141,6 +141,31 @@ class FarmManagementDB:
         except sqlite3.Error as e:
             print(f"[create_tables] Error: {e}")
 
+    def fetch_all_table_print(self):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                tables = cursor.fetchall()
+
+                for table in tables:
+                    table_name = table[0]
+                    print(f"\nTable: {table_name}")
+                    cursor.execute(f"PRAGMA table_info({table_name})")
+                    columns = [col[1] for col in cursor.fetchall()]
+
+                    cursor.execute(f"SELECT * FROM {table_name}")
+                    rows = cursor.fetchall()
+
+                    if rows:
+                        print(tabulate(rows, headers=columns, tablefmt="grid"))
+                    else:
+                        print("(No data)")
+                    print("-" * 60)
+
+        except sqlite3.Error as e:
+            print(f"[fetch_all_table_print] Error: {e}")
+
     # ---------- INSERT METHODS ----------
     def insert_user(self, name, email_id, phone_number, password, address, user_type):
         try:
@@ -176,15 +201,15 @@ class FarmManagementDB:
             print(f"[insert_customer] Error: {e}")
             return None
             
-    def insert_delivery_person(self, user_id, license_number, vehicle_type, vehicle_number, current_location=None):
+    def insert_delivery_person(self, user_id, license_number, vehicle_type, vehicle_number,available_status):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     INSERT INTO DeliveryPerson 
-                    (UserID, LicenseNumber, VehicleType, VehicleNumber, CurrentLocation) 
+                    (UserID, LicenseNumber, VehicleType, VehicleNumber,AvailabilityStatus) 
                     VALUES (?, ?, ?, ?, ?)
-                """, (user_id, license_number, vehicle_type, vehicle_number, current_location))
+                """, (user_id, license_number, vehicle_type, vehicle_number,available_status))
                 return cursor.lastrowid
         except sqlite3.Error as e:
             print(f"[insert_delivery_person] Error: {e}")
@@ -203,8 +228,6 @@ class FarmManagementDB:
                     INSERT INTO Crop (Name, Price, FarmerID, QuantityAvailable, Unit) 
                     VALUES (?, ?, ?, ?, ?)
                 """, (name, price, row, quantity_available, unit))
-                conn.commit()
-
                 cursor.execute("""
                     SELECT CropID FROM Crop WHERE Name = ? AND FarmerID = ?
                 """, (name, farmer_id))
@@ -337,18 +360,15 @@ class FarmManagementDB:
             return None
 
     # ---------- UPDATE METHODS ----------
-    def update_user(self, email_id, name=None, phone_number=None, password=None, address=None):
+    def update_user(self, email_id, name, phone_number, address):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
-                if name:
-                    cursor.execute("UPDATE User SET Name = ? WHERE EmailID = ?", (name, email_id))
-                if phone_number:
-                    cursor.execute("UPDATE User SET PhoneNumber = ? WHERE EmailID = ?", (phone_number, email_id))
-                if password:
-                    cursor.execute("UPDATE User SET Password = ? WHERE EmailID = ?", (password, email_id))
-                if address:
-                    cursor.execute("UPDATE User SET Address = ? WHERE EmailID = ?", (address, email_id))
+                cursor.execute("""
+                    UPDATE User 
+                    SET Name = ?, PhoneNumber = ?, Address = ? 
+                    WHERE EmailID = ?   
+                """, (name, phone_number, address, email_id))
                 return cursor.rowcount
         except sqlite3.Error as e:  
             print(f"[update_user] Error: {e}")
@@ -409,28 +429,25 @@ class FarmManagementDB:
             print(f"[update_delivery_status] Error: {e}")
             return None
             
-    def update_delivery_person_status(self, delivery_person_id, status, current_location=None):
+    def update_delivery_person(self, EmailID,Name ,Phone, address, license_number, vehicle_type, vehicle_number,status):
         try:
             with self.connect_db() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     UPDATE DeliveryPerson 
-                    SET AvailabilityStatus = ? 
-                    WHERE DeliveryPersonID = ?
-                """, (status, delivery_person_id))
-                
-                if current_location:
-                    cursor.execute("""
-                        UPDATE DeliveryPerson 
-                        SET CurrentLocation = ? 
-                        WHERE DeliveryPersonID = ?
-                    """, (current_location, delivery_person_id))
-                
+                    SET LicenseNumber = ?, VehicleType = ?, VehicleNumber = ? ,AvailabilityStatus = ?
+                    WHERE UserID = ?
+                """, (license_number, vehicle_type, vehicle_number, status, EmailID))
+                cursor.execute("""
+                    UPDATE User
+                    SET Name=? PhoneNumber = ?, Address = ? 
+                    WHERE EmailID = ?
+                """, (Name, Phone, address, EmailID))
                 return cursor.rowcount
         except sqlite3.Error as e:
-            print(f"[update_delivery_person_status] Error: {e}")
+            print(f"[update_delivery_person] Error: {e}")
             return None
-    
+
     def update_feedback(self, feedback_id, comments=None, rating=None):
         try:
             with self.connect_db() as conn:
@@ -940,13 +957,58 @@ class FarmManagementDB:
         except sqlite3.Error as e:
             print(f"[get_all_crops] Error: {e}")
             return None
+    
+    def get_farmer_by_email(self, email_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT u.*, f.AadharNumber
+                    FROM Farmer f
+                    JOIN User u ON f.UserID = u.EmailID
+                    WHERE u.EmailID = ?
+                """, (email_id,))
+                return cursor.fetchone()
+        except sqlite3.Error as e:
+            print(f"[get_farme_by_email] Error: {e}")
+            return None
+    
+    def get_deliver_person_by_email(self, email_id):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT u.*,dp.LicenseNumber , dp.VehicleType, dp.VehicleNumber, dp.AvailabilityStatus
+                    FROM DeliveryPerson dp
+                    JOIN User u ON dp.UserID = u.EmailID
+                    WHERE u.EmailID = ?
+                """, (email_id,))
+                return cursor.fetchone()
+        except sqlite3.Error as e:
+            print(f"[get_deliver_person_by_email] Error: {e}")
+            return None
 
-
-
+    def update_farmer(self, email_id, name, phone_number, address, aadhar):
+        try:
+            with self.connect_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE User 
+                    SET Name = ?, PhoneNumber = ?, Address = ? 
+                    WHERE EmailID = ?
+                """, (name, phone_number, address, email_id))
+                cursor.execute("""
+                    UPDATE Farmer 
+                    SET AadharNumber = ? 
+                    WHERE UserID = ?
+                """, (aadhar, email_id))
+                return 
+        except sqlite3.Error as e:  
+            print(f"[update_farmer] Error: {e}")
+            return None
 
 # Run this section only when executing directly
 if __name__ == "__main__":
     db = FarmManagementDB()
     db.create_tables()
-    print("Database and tables created successfully.")
-    # Example usage
+    db.fetch_all_table_print()

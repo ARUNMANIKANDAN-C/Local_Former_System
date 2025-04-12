@@ -4,15 +4,20 @@
 
 {% block content %}
 <div class="login">
-    <form class="form" method="POST" action="/submit_delivery">
+    <form class="form" method="POST" >
         <label for="license">License Number:</label>
         <input type="text" name="license" id="license" placeholder="DL-1234567890" required>
 
         <label for="plate_number">Vehicle Plate Number:</label>
         <input type="text" name="plate_number" id="plate_number" placeholder="MH12AB1234" required pattern="[A-Z]{2}\d{2}[A-Z]{2}\d{4}" maxlength="10" title="Format: MH12AB1234">
 
-        <label for="address">Address:</label>
-        <textarea name="address" id="address" placeholder="Full Address" required rows="3"></textarea>
+        <label>Available Status:</label>
+        <section>
+          <input type="radio" name="available_status" id="available" value="Available"  >
+          <label for="available">Available</label>
+          <input type="radio" name="available_status" id="not_available" value="Not Available" >
+          <label for="not_available">Not Available</label>
+        </section>
 
         <label for="vehicle_type">Vehicle Type:</label>
         <input type="text" name="vehicle_type" id="vehicle_type" placeholder="Bike / Van / Car" required>
